@@ -29,7 +29,7 @@ const Navbar = () => {
             className="flex items-center gap-2"
             whileHover={{ scale: 1.02 }}
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-warm flex items-center justify-center shadow-soft">
+            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shadow-soft">
               <Coffee className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-display text-xl font-bold text-foreground">
@@ -43,7 +43,7 @@ const Navbar = () => {
               <motion.a
                 key={link.name}
                 href={link.href}
-                className="text-muted-foreground hover:text-foreground font-medium transition-colors"
+                className="text-muted-foreground hover:text-accent font-medium transition-colors"
                 whileHover={{ y: -2 }}
               >
                 {link.name}
@@ -54,7 +54,9 @@ const Navbar = () => {
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-3">
             <Button variant="ghost">Sign In</Button>
-            <Button variant="default">Get Started</Button>
+            <Button variant="default" className="bg-accent ">
+              Get Started
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -80,7 +82,7 @@ const Navbar = () => {
                 <a
                   key={link.name}
                   href={link.href}
-                  className="text-muted-foreground hover:text-foreground font-medium transition-colors px-2"
+                  className="text-muted-foreground hover:text-accent font-medium transition-colors px-2"
                   onClick={() => setIsOpen(false)}
                 >
                   {link.name}
@@ -90,7 +92,9 @@ const Navbar = () => {
                 <Button variant="ghost" className="justify-start">
                   Sign In
                 </Button>
-                <Button variant="default">Sign Up</Button>
+                <Button variant="default" className="bg-accent">
+                  Sign Up
+                </Button>
               </div>
             </div>
           </motion.div>
