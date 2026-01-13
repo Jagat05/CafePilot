@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Coffee, TrendingUp, Users } from "lucide-react";
+import Image from "next/image";
 
 const HeroSection = () => {
   return (
@@ -73,10 +74,22 @@ const HeroSection = () => {
               <div className="bg-card rounded-2xl shadow-card pt-10 p-6 border border-border">
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-secondary rounded-xl p-4">
-                    <img src="coffee1.png" alt="" />
+                    <Image
+                      src="/coffee1.png"
+                      alt="Picture of Coffee"
+                      width={400}
+                      height={400}
+                      className="rounded-lg"
+                    />
                   </div>
                   <div className="bg-secondary rounded-xl p-4">
-                    <img src="coffee2.png" alt="" />
+                    <Image
+                      src="/coffee2.png"
+                      alt="Picture of Coffee"
+                      width={400}
+                      height={400}
+                      className="rounded-lg"
+                    />
                   </div>
                 </div>
               </div>
