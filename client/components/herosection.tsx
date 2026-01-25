@@ -1,7 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, Coffee, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, Coffee, Users } from "lucide-react";
 import Image from "next/image";
 
 const HeroSection = () => {
@@ -57,6 +57,7 @@ const HeroSection = () => {
                 transition-transform duration-300"
               >
                 Create an Account
+                <Users />
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </div>
