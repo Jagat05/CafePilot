@@ -1,4 +1,5 @@
 import User from "../model/UserSchema.js";
+import bcrypt from "bcryptjs";
 
 export const registerOwner = async (req, res) => {
   try {
@@ -23,14 +24,17 @@ export const registerOwner = async (req, res) => {
         message: "User already exists",
       });
     }
+    const salt = 10;
+    const hashPassword = await bcrypt.hashSync(password, salt);
 
     //  Create user
     const user = await User.create({
       name: username,
       email,
-      password,
+      password: hashPassword,
     });
-
+    //Remove the password from this object before sending it.
+    user.password = undefined;
     // Success response
     return res.status(201).json({
       success: true,
