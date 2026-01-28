@@ -1,11 +1,14 @@
 import User from "../model/UserSchema.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
+/* =====================
+   OWNER REGISTRATION
+   ===================== */
 export const registerOwner = async (req, res) => {
   try {
     let { username, email, password } = req.body;
 
-    // Validate required fields
     if (!username || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -13,39 +16,98 @@ export const registerOwner = async (req, res) => {
       });
     }
 
-    //  Normalize email
     email = email.toLowerCase();
 
-    //  Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    const exists = await User.findOne({ email });
+    if (exists) {
       return res.status(400).json({
         success: false,
         message: "User already exists",
       });
     }
-    const salt = 10;
-    const hashPassword = await bcrypt.hashSync(password, salt);
 
-    //  Create user
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await User.create({
       name: username,
       email,
-      password: hashPassword,
+      password: hashedPassword,
+      role: "owner",
+      status: "pending", // admin approval needed
     });
-    //Remove the password from this object before sending it.
+
     user.password = undefined;
-    // Success response
-    return res.status(201).json({
+
+    res.status(201).json({
       success: true,
-      message: "User registered successfully",
+      message: "Registration successful. Awaiting admin approval.",
       user,
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message: "Error while registration",
+      message: "Registration failed",
+    });
+  }
+};
+
+/* =====================
+   LOGIN (ADMIN & OWNER)
+   ===================== */
+export const loginUser = async (req, res) => {
+  try {
+    let { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password required",
+      });
+    }
+
+    email = email.toLowerCase();
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    if (user.status !== "approved") {
+      return res.status(403).json({
+        success: false,
+        message: "Account not approved by admin",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" },
+    );
+
+    user.password = undefined;
+
+    res.status(200).json({
+      success: true,
+      token,
+      user,
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Login failed",
     });
   }
 };

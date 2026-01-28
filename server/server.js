@@ -1,7 +1,8 @@
 import express from "express";
 import "dotenv/config";
 import ConnectDB from "./database/db.js";
-import router from "./routes/authRoutes.js";
+import userRouter from "./routes/userRoutes.js";
+import adminRouter from "./routes/adminRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -13,7 +14,8 @@ app.use(express.json());
 ConnectDB();
 
 // Routes
-app.use("/api/auth", router);
+app.use("/api/users", userRouter);
+app.use("/api/admin", adminRouter);
 
 app.get("/", (req, res) => {
   res.send("Cafe Pilot API running ☕");
