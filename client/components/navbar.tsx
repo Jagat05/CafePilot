@@ -3,9 +3,12 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Coffee, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const router = useRouter();
 
   const navLinks = [
     { name: "Features", href: "#features" },
@@ -53,7 +56,14 @@ const Navbar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-3">
-            <Button variant="ghost">Sign In</Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                router.push("/login");
+              }}
+            >
+              Sign In
+            </Button>
             <Button variant="default" className="bg-accent ">
               Get Started
             </Button>

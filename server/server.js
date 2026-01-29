@@ -3,6 +3,7 @@ import "dotenv/config";
 import ConnectDB from "./database/db.js";
 import userRouter from "./routes/userRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
+import cors from "cors";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -12,6 +13,13 @@ app.use(express.json());
 
 // DB
 ConnectDB();
+
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  }),
+);
 
 // Routes
 app.use("/api/users", userRouter);
