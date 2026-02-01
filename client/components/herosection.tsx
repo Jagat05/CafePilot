@@ -3,8 +3,10 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Coffee, Users } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const HeroSection = () => {
+  const router = useRouter();
   return (
     <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
       {/* Background gradient */}
@@ -52,6 +54,7 @@ const HeroSection = () => {
             {/* Create Account*/}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button
+                onClick={() => router.push("/register")}
                 variant="outline"
                 className="hover:scale-120 
                 transition-transform duration-300"

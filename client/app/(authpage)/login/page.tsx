@@ -41,7 +41,7 @@ const Login = () => {
       if (data.user.role === "admin") {
         router.push("/admin");
       } else {
-        router.push("/cafedashboard");
+        router.push("/dashboard");
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {

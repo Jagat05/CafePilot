@@ -64,7 +64,13 @@ const Navbar = () => {
             >
               Sign In
             </Button>
-            <Button variant="default" className="bg-accent ">
+            <Button
+              variant="default"
+              className="bg-accent "
+              onClick={() => {
+                router.push("/register");
+              }}
+            >
               Get Started
             </Button>
           </div>
