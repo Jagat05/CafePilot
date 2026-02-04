@@ -28,26 +28,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const menuItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Table", url: "/tables", icon: Table2 },
-  { title: "Menu", url: "/menu", icon: UtensilsCrossed },
-  { title: "Orders", url: "/orders", icon: ClipboardList },
-  { title: "Staff", url: "/staff", icon: Users },
+  { title: "Dashboard", url: "/cafedashboard/dashboard", icon: LayoutDashboard },
+  { title: "Table", url: "/cafedashboard/tables", icon: Table2 },
+  { title: "Menu", url: "/cafedashboard/menu", icon: UtensilsCrossed },
+  { title: "Orders", url: "/cafedashboard/orders", icon: ClipboardList },
+  { title: "Staff", url: "/cafedashboard/staff", icon: Users },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   // const { user, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+
   const collapsed = state === "collapsed";
 
   return (
     <Sidebar className="border-r-0" collapsible="icon">
       <SidebarHeader className="h-16 border-b border-sidebar-border px-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sidebar-primary">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent">
             <Coffee className="h-6 w-6 text-sidebar-primary-foreground" />
           </div>
           {!collapsed && (
@@ -72,17 +75,16 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
-                    <div
-                      onClick={() => router.push(`${item.url}`)}
-                      // to={item.url}
-                      // end={item.url === "/"}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground transition-colors hover:bg-sidebar-accent"
-                      // activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
-                    >
-                      <item.icon className="h-5 w-5 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </div>
+                  <SidebarMenuButton
+                    tooltip={item.title}
+                    onClick={() => router.push(item.url)}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors
+        hover:bg-amber-500
+        ${pathname === item.url ? "bg-accent text-sidebar-primary font-medium" : "text-sidebar-foreground"}
+      `}
+                  >
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    {!collapsed && <span>{item.title}</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

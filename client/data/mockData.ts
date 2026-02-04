@@ -220,3 +220,65 @@ export const mockStaff: StaffMember[] = [
     hireDate: new Date('2023-01-05'),
   },
 ];
+
+export interface Cafe {
+  id: string;
+  name: string;
+  ownerName: string;
+  email: string;
+  status: "active" | "pending" | "suspended";
+  plan: "basic" | "pro" | "enterprise";
+  joinedDate: Date;
+  revenue: number;
+}
+
+export const mockCafes: Cafe[] = [
+  {
+    id: "1",
+    name: "Morning Brew",
+    ownerName: "Alice Freeman",
+    email: "alice@morningbrew.com",
+    status: "active",
+    plan: "pro",
+    joinedDate: new Date("2025-01-15"),
+    revenue: 1250.0,
+  },
+  {
+    id: "2",
+    name: "Urban Grind",
+    ownerName: "Mark Stevenson",
+    email: "mark@urbangrind.co",
+    status: "active",
+    plan: "enterprise",
+    joinedDate: new Date("2025-02-01"),
+    revenue: 3500.0,
+  },
+  {
+    id: "3",
+    name: "Retro Diner",
+    ownerName: "Sarah Connor",
+    email: "sarah@retrodiner.net",
+    status: "pending",
+    plan: "basic",
+    joinedDate: new Date("2026-02-02"),
+    revenue: 0.0,
+  },
+  {
+    id: "4",
+    name: "Late Night Beans",
+    ownerName: "John Wick",
+    email: "john@latenight.com",
+    status: "suspended",
+    plan: "basic",
+    joinedDate: new Date("2024-11-10"),
+    revenue: 450.0,
+  },
+];
+
+export const mockSaaSStats = {
+  totalRevenue: 15430.0,
+  activeCafes: 42,
+  pendingRequests: 5,
+  totalUsers: 156,
+};
+
