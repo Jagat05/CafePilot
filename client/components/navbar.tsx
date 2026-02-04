@@ -105,10 +105,22 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                <Button variant="ghost" className="justify-start">
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => {
+                    router.push("/login");
+                  }}
+                >
                   Sign In
                 </Button>
-                <Button variant="default" className="bg-accent">
+                <Button
+                  variant="default"
+                  className="bg-accent"
+                  onClick={() => {
+                    router.push("/register");
+                  }}
+                >
                   Sign Up
                 </Button>
               </div>

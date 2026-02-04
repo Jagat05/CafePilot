@@ -3,12 +3,16 @@ import User from "../model/UserSchema.js";
 
 const authMiddleware = async (req, res, next) => {
   try {
-    const header = req.headers.authorization;
-    if (!header || !header.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "No token" });
-    }
+    // const header = req.headers.authorization;
+    // if (!header || !header.startsWith("Bearer ")) {
+    //   return res.status(401).json({ message: "No token" });
+    // }
 
-    const token = header.split(" ")[1];
+    // const token = header.split(" ")[1];
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findById(decoded.id).select("-password");

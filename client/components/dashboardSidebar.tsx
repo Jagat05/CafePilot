@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import {
   Coffee,
   UtensilsCrossed,
@@ -10,6 +11,8 @@ import {
   Table,
   Table2,
 } from "lucide-react";
+import API from "@/lib/axios";
+
 // import { NavLink } from '@/components/NavLink';
 // import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -31,7 +34,11 @@ import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 
 const menuItems = [
-  { title: "Dashboard", url: "/cafedashboard/dashboard", icon: LayoutDashboard },
+  {
+    title: "Dashboard",
+    url: "/cafedashboard/dashboard",
+    icon: LayoutDashboard,
+  },
   { title: "Table", url: "/cafedashboard/tables", icon: Table2 },
   { title: "Menu", url: "/cafedashboard/menu", icon: UtensilsCrossed },
   { title: "Orders", url: "/cafedashboard/orders", icon: ClipboardList },
@@ -40,11 +47,35 @@ const menuItems = [
 
 export function AppSidebar() {
   const { state } = useSidebar();
-  // const { user, logout } = useAuth();
+  const [user, setUser] = React.useState<{ name: string; role: string } | null>(
+    null,
+  );
   const router = useRouter();
   const pathname = usePathname();
 
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { data } = await API.get("/users/profile");
+        if (data.success) {
+          setUser(data.user);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user profile", error);
+      }
+    };
+    fetchUser();
+  }, []);
+
   const collapsed = state === "collapsed";
+  const handleLogout = async () => {
+    try {
+      await API.post("/users/logout");
+      router.replace("/login");
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  };
 
   return (
     <Sidebar className="border-r-0" collapsible="icon">
@@ -94,36 +125,33 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-4">
-        {/* {user && (
-          <div className="flex items-center gap-3">
-            <Avatar className="h-9 w-9">
-              <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-sm">
-                {user.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </AvatarFallback>
-            </Avatar>
-            {!collapsed && (
-              <div className="flex flex-1 flex-col overflow-hidden">
-                <span className="truncate text-sm font-medium text-sidebar-foreground">
-                  {user.name}
-                </span>
-                <span className="truncate text-xs capitalize text-sidebar-foreground/60">
-                  {user.role}
-                </span>
-              </div>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={logout}
-              className="shrink-0 text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        )} */}
+        <div className="flex items-center gap-3">
+          <Avatar className="h-9 w-9">
+            <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-sm">
+              {user ? user.name.charAt(0).toUpperCase() : "CP"}
+            </AvatarFallback>
+          </Avatar>
+
+          {!collapsed && (
+            <div className="flex flex-1 flex-col overflow-hidden">
+              <span className="truncate text-sm font-medium text-sidebar-foreground">
+                {user ? user.name : "Loading..."}
+              </span>
+              <span className="truncate text-xs capitalize text-sidebar-foreground/60">
+                {user ? user.role : "Guest"}
+              </span>
+            </div>
+          )}
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            className="shrink-0 text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

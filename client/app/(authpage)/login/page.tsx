@@ -34,9 +34,13 @@ const Login = () => {
         email,
         password,
       });
+      // document.cookie = `token=${data.token}; path=/`;
+      // document.cookie = `user=${JSON.stringify(data.user)}; path=/`;
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // localStorage.setItem("token", data.token);
+      // localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Backend already sets HTTP-only cookie automatically
 
       if (data.user.role === "admin") {
         router.push("/admin");

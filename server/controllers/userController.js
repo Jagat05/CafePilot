@@ -98,9 +98,21 @@ export const loginUser = async (req, res) => {
 
     user.password = undefined;
 
+    // res.status(200).json({
+    //   success: true,
+    //   token,
+    //   user,
+    // });
+    res.cookie("token", token, {
+      httpOnly: true, // JS can't access (XSS safe)
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict", // CSRF protection
+      // maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+    });
+
     res.status(200).json({
       success: true,
-      token,
       user,
     });
   } catch (error) {
@@ -110,4 +122,27 @@ export const loginUser = async (req, res) => {
       message: "Login failed",
     });
   }
+};
+
+/* =====================
+   LOGOUT (ADMIN & OWNER)
+   ===================== */
+export const logout = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  return res.status(200).json({ message: "Logged out successfully" });
+};
+
+/* =====================
+   GET PROFILE (ME)
+   ===================== */
+export const getProfile = (req, res) => {
+  res.status(200).json({
+    success: true,
+    user: req.user,
+  });
 };
