@@ -61,6 +61,18 @@ export const getPendingOwners = async (req, res) => {
 };
 
 /* =====================
+   VIEW APPROVED OWNERS
+   ===================== */
+export const getApprovedOwners = async (req, res) => {
+  const owners = await User.find({
+    role: "owner",
+    status: { $in: ["approved", "suspended"] },
+  }).select("-password");
+
+  res.json({ success: true, owners });
+};
+
+/* =====================
    APPROVE OWNER
    ===================== */
 export const approveOwner = async (req, res) => {

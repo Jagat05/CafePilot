@@ -1,5 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import API from "@/lib/axios";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -25,22 +27,49 @@ import { CreateCafeDialog } from "../components/CreateCafeDialog";
 
 export default function ManageCafe() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [cafes, setCafes] = useState<Cafe[]>(mockCafes);
+  const [approvedCafes, setApprovedCafes] = useState<any[]>([]);
+  const [pendingCafes, setPendingCafes] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredCafes = cafes.filter(
+  const fetchCafes = async () => {
+    setIsLoading(true);
+    try {
+      const approvedRes = await API.get("/admin/approved-owners");
+      const pendingRes = await API.get("/admin/pending-owners");
+      setApprovedCafes(approvedRes.data.owners);
+      setPendingCafes(pendingRes.data.owners);
+    } catch (error) {
+      console.error("Error fetching cafes:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCafes();
+  }, []);
+
+  const handleApprove = async (id: string) => {
+    try {
+      await API.put(`/admin/approve-owner/${id}`);
+      fetchCafes(); // Refresh lists
+      alert("Cafe approved successfully");
+    } catch (error) {
+      alert("Failed to approve cafe");
+    }
+  };
+
+  const filteredApproved = approvedCafes.filter(
     (cafe) =>
       cafe.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cafe.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cafe.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleStatusChange = (id: string, newStatus: Cafe["status"]) => {
-    setCafes(
-      cafes.map((cafe) =>
-        cafe.id === id ? { ...cafe, status: newStatus } : cafe
-      )
-    );
-  };
+  const filteredPending = pendingCafes.filter(
+    (cafe) =>
+      cafe.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cafe.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="flex flex-col gap-6 p-6 min-h-screen bg-muted/10">
@@ -51,9 +80,8 @@ export default function ManageCafe() {
             View and manage all registered cafes on the platform.
           </p>
         </div>
-
-        <CreateCafeDialog />
-      </div >
+        <CreateCafeDialog onCafeCreated={fetchCafes} />
+      </div>
 
       <div className="flex items-center gap-2">
         <div className="relative flex-1 max-w-sm">
@@ -65,91 +93,146 @@ export default function ManageCafe() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button variant="outline" size="icon">
-          <Filter className="h-4 w-4" />
-        </Button>
       </div>
 
-      <div className="rounded-md border bg-card shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Cafe Details</TableHead>
-              <TableHead>Owner</TableHead>
-              <TableHead>Plan</TableHead>
-              <TableHead>Joined Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Revenue</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredCafes.map((cafe) => (
-              <TableRow key={cafe.id}>
-                <TableCell>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{cafe.name}</span>
-                    <span className="text-xs text-muted-foreground">{cafe.email}</span>
-                  </div>
-                </TableCell>
-                <TableCell>{cafe.ownerName}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="uppercase text-xs font-bold">
-                    {cafe.plan}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {cafe.joinedDate.toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  {cafe.status === "active" && (
-                    <Badge className="bg-emerald-500 hover:bg-emerald-600">Active</Badge>
-                  )}
-                  {cafe.status === "pending" && (
-                    <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-200">
-                      Pending
-                    </Badge>
-                  )}
-                  {cafe.status === "suspended" && (
-                    <Badge variant="destructive">Suspended</Badge>
-                  )}
-                </TableCell>
-                <TableCell className="text-right font-medium">
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "USD",
-                  }).format(cafe.revenue)}
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => navigator.clipboard.writeText(cafe.id)}>
-                        Copy ID
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleStatusChange(cafe.id, "active")}>
-                        <CheckCircle className="mr-2 h-4 w-4 text-emerald-500" />
-                        Activate
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleStatusChange(cafe.id, "suspended")}>
-                        <Ban className="mr-2 h-4 w-4 text-destructive" />
-                        Suspend
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </div >
+      <Tabs defaultValue="approved" className="w-full">
+        <TabsList>
+          <TabsTrigger value="approved">Approved Cafes</TabsTrigger>
+          <TabsTrigger value="pending">
+            Pending Request
+            {pendingCafes.length > 0 && (
+              <Badge variant="destructive" className="ml-2 px-1 py-0.5 text-[10px]">
+                {pendingCafes.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ALLOWED TAB */}
+        <TabsContent value="approved">
+          <div className="rounded-md border bg-card shadow-sm">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Cafe Details</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8">
+                      Loading...
+                    </TableCell>
+                  </TableRow>
+                ) : filteredApproved.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8">
+                      No approved cafes found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredApproved.map((cafe) => (
+                    <TableRow key={cafe._id}>
+                      <TableCell>
+                        <span className="font-medium">{cafe.name}</span>
+                      </TableCell>
+                      <TableCell>{cafe.email}</TableCell>
+                      <TableCell>
+                        <Badge className="bg-emerald-500 hover:bg-emerald-600 capitalize">
+                          {cafe.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem
+                              onClick={() => navigator.clipboard.writeText(cafe._id)}
+                            >
+                              Copy ID
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
+
+        {/* PENDING TAB */}
+        <TabsContent value="pending">
+          <div className="rounded-md border bg-card shadow-sm">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Cafe Details</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8">
+                      Loading...
+                    </TableCell>
+                  </TableRow>
+                ) : filteredPending.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8">
+                      No pending requests.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredPending.map((cafe) => (
+                    <TableRow key={cafe._id}>
+                      <TableCell>
+                        <span className="font-medium">{cafe.name}</span>
+                      </TableCell>
+                      <TableCell>{cafe.email}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="bg-amber-100 text-amber-700 capitalize">
+                          {cafe.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleApprove(cafe._id)}>
+                              <CheckCircle className="mr-2 h-4 w-4 text-emerald-500" />
+                              Approve
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
