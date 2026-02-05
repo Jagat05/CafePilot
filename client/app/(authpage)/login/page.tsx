@@ -36,7 +36,7 @@ const Login = () => {
       });
       if (data.success) {
         // Manually set user cookie for middleware
-        document.cookie = `user=${JSON.stringify(data.user)}; path=/; max-age=86400;`; // 1 day
+        document.cookie = `user=${encodeURIComponent(JSON.stringify(data.user))}; path=/; max-age=86400;`; // 1 day
 
         if (data.user.role === "admin") {
           router.push("/admin");
