@@ -5,6 +5,7 @@ import userRouter from "./routes/userRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import tableRouter from "./routes/tableRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -26,6 +27,7 @@ app.use(
 // Routes
 app.use("/api/users", userRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/tables", tableRouter);
 
 app.get("/", (req, res) => {
   res.send("Cafe Pilot API running ☕");
