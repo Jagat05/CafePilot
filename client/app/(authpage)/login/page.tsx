@@ -34,25 +34,25 @@ const Login = () => {
         email,
         password,
       });
-      // document.cookie = `token=${data.token}; path=/`;
-      // document.cookie = `user=${JSON.stringify(data.user)}; path=/`;
+      if (data.success) {
+        // Manually set user cookie for middleware
+        document.cookie = `user=${JSON.stringify(data.user)}; path=/; max-age=86400;`; // 1 day
 
-      // localStorage.setItem("token", data.token);
-      // localStorage.setItem("user", JSON.stringify(data.user));
-
-      // Backend already sets HTTP-only cookie automatically
-
-      if (data.user.role === "admin") {
-        router.push("/admin");
-      } else {
-        router.push("/cafedashboard/dashboard");
+        if (data.user.role === "admin") {
+          router.push("/admin");
+        } else {
+          router.push("/cafedashboard/dashboard");
+        }
       }
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        alert(error.response?.data?.message || "Login failed");
+      if (axios.isAxiosError(error) && error.response) {
+        const errorMessage =
+          error.response.data?.message || "Login failed. Please try again.";
+        alert(errorMessage);
       } else {
-        alert("Something went wrong");
+        alert("An unexpected error occurred. Please try again later.");
       }
+      console.error("Login Error:", error);
     } finally {
       setIsLoading(false);
     }
