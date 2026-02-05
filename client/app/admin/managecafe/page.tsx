@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Search, Filter, Store, Ban, CheckCircle } from "lucide-react";
 import { mockCafes, Cafe } from "@/data/mockData";
+import { CreateCafeDialog } from "../components/CreateCafeDialog";
 
 export default function ManageCafe() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -50,11 +51,9 @@ export default function ManageCafe() {
             View and manage all registered cafes on the platform.
           </p>
         </div>
-        <Button className="bg-amber-600 hover:bg-amber-700">
-          <Store className="mr-2 h-4 w-4" />
-          Add New Cafe
-        </Button>
-      </div>
+
+        <CreateCafeDialog />
+      </div >
 
       <div className="flex items-center gap-2">
         <div className="relative flex-1 max-w-sm">
@@ -151,6 +150,6 @@ export default function ManageCafe() {
           </TableBody>
         </Table>
       </div>
-    </div>
+    </div >
   );
 }
