@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Coffee, Eye, EyeOff } from "lucide-react";
+import { Coffee, Eye, EyeOff } from "lucide-center"; // Fixed icon library mismatch if any, using lucide-react in other files
+import {
+  Coffee as CoffeeIcon,
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,8 +22,10 @@ import Link from "next/link";
 import API from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -48,9 +55,17 @@ const Login = () => {
       if (axios.isAxiosError(error) && error.response) {
         const errorMessage =
           error.response.data?.message || "Login failed. Please try again.";
-        alert(errorMessage);
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
       } else {
-        alert("An unexpected error occurred. Please try again later.");
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again later.",
+          variant: "destructive",
+        });
       }
       console.error("Login Error:", error);
     } finally {
@@ -74,7 +89,7 @@ const Login = () => {
               transition={{ delay: 0.2 }}
               className="mx-auto w-16 h-16 rounded-2xl bg-gradient-warm flex items-center justify-center shadow-glow"
             >
-              <Coffee className="w-8 h-8 text-primary-foreground" />
+              <CoffeeIcon className="w-8 h-8 text-primary-foreground" />
             </motion.div>
             <div>
               <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
@@ -117,9 +132,9 @@ const Login = () => {
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
+                      <EyeOffIcon className="w-5 h-5" />
                     ) : (
-                      <Eye className="w-5 h-5" />
+                      <EyeIcon className="w-5 h-5" />
                     )}
                   </button>
                 </div>

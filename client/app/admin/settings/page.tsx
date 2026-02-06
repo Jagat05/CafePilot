@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import {
   Card,
@@ -13,10 +14,26 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Save, AlertTriangle, Bell, Lock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function GlobalSettings() {
+  const { toast } = useToast();
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [announcement, setAnnouncement] = useState("");
+
+  const handleBroadcast = () => {
+    toast({
+      title: "Sent",
+      description: "Announcement broadcast sent!",
+    });
+  };
+
+  const handleUpdatePassword = () => {
+    toast({
+      title: "Updated",
+      description: "Master password updated successfully.",
+    });
+  };
 
   return (
     <div className="flex flex-col gap-6 p-6 min-h-screen bg-muted/10">
@@ -52,7 +69,7 @@ export default function GlobalSettings() {
                 rows={4}
               />
             </div>
-            <Button onClick={() => alert("Announcement broadcast sent!")}>
+            <Button onClick={handleBroadcast}>
               <Save className="mr-2 h-4 w-4" />
               Broadcast Message
             </Button>
@@ -106,7 +123,7 @@ export default function GlobalSettings() {
               <Input type="password" placeholder="New Password" />
               <Input type="password" placeholder="Confirm New Password" />
             </div>
-            <Button variant="outline">Update Password</Button>
+            <Button variant="outline" onClick={handleUpdatePassword}>Update Password</Button>
           </CardContent>
         </Card>
       </div>

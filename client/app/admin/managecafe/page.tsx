@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import API from "@/lib/axios";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,10 +23,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Search, Filter, Store, Ban, CheckCircle } from "lucide-react";
-import { mockCafes, Cafe } from "@/data/mockData";
 import { CreateCafeDialog } from "../components/CreateCafeDialog";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ManageCafe() {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [approvedCafes, setApprovedCafes] = useState<any[]>([]);
   const [pendingCafes, setPendingCafes] = useState<any[]>([]);
@@ -40,6 +42,11 @@ export default function ManageCafe() {
       setPendingCafes(pendingRes.data.owners);
     } catch (error) {
       console.error("Error fetching cafes:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch cafes",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -53,9 +60,16 @@ export default function ManageCafe() {
     try {
       await API.put(`/admin/approve-owner/${id}`);
       fetchCafes(); // Refresh lists
-      alert("Cafe approved successfully");
+      toast({
+        title: "Success",
+        description: "Cafe approved successfully",
+      });
     } catch (error) {
-      alert("Failed to approve cafe");
+      toast({
+        title: "Error",
+        description: "Failed to approve cafe",
+        variant: "destructive",
+      });
     }
   };
 

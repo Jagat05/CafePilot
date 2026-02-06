@@ -1,41 +1,67 @@
 import { Table } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users } from "lucide-react";
+import { Users, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface TableCardProps {
-    table: Table;
-    onClick?: (table: Table) => void;
-    onStatusChange?: (tableId: string, status: Table["status"]) => void;
-    onDelete?: (tableId: string) => void;
+  table: any; // Using any for now to handle both backend and frontend types flexibly
+  onClick?: (table: any) => void;
+  onStatusChange?: (tableId: string, status: any) => void;
+  onDelete?: (e: React.MouseEvent, tableId: string) => void;
 }
 
 const statusColor = {
-    available: "bg-success/10 text-success border-success/20",
-    occupied: "bg-destructive/10 text-destructive border-destructive/20",
-    reserved: "bg-warning/10 text-warning border-warning/20",
+  available: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  occupied: "bg-amber-50 text-amber-700 border-amber-200",
+  reserved: "bg-blue-50 text-blue-700 border-blue-200",
 };
 
-export function TableCard({ table, onClick }: TableCardProps) {
-    return (
-        <Card
-            className={`cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] ${statusColor[table.status]} border-2`}
-            onClick={() => onClick?.(table)}
-        >
-            <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                    <CardTitle className="text-xl">Table {table.number}</CardTitle>
-                    <Badge variant="outline" className="capitalize bg-white/50">
-                        {table.status}
-                    </Badge>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    <span>{table.seats} Seats</span>
-                </div>
-            </CardContent>
-        </Card>
-    );
+export function TableCard({ table, onClick, onDelete }: TableCardProps) {
+  const tableNumber = table.number || table.tableNumber;
+  const seats = table.seats || table.capacity;
+  const tableId = table.id || table._id;
+  const status = table.status || "available";
+
+  return (
+    <Card
+      className={`cursor-pointer transition-all hover:shadow-md active:scale-[0.98] ${statusColor[status as keyof typeof statusColor]} border-2`}
+      onClick={() => onClick?.(table)}
+    >
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-xl font-bold">
+              Table {tableNumber}
+            </CardTitle>
+            <Badge
+              variant="outline"
+              className="mt-1 capitalize bg-white/50 border-current/20"
+            >
+              {status}
+            </Badge>
+          </div>
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(e, tableId);
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center gap-2 text-sm opacity-80">
+          <Users className="h-4 w-4" />
+          <span>{seats} Seats</span>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }

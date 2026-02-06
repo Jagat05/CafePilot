@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
 
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -12,8 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, CheckCircle } from "lucide-react";
-import DashboardLayout from "../layout";
 import API from "@/lib/axios";
+import { useToast } from "@/hooks/use-toast";
 
 const statusConfig: Record<
   "active" | "completed",
@@ -32,6 +32,7 @@ const statusConfig: Record<
 };
 
 export default function OrdersPage() {
+  const { toast } = useToast();
   const [orders, setOrders] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("active");
   const [isLoading, setIsLoading] = useState(false);
@@ -45,7 +46,11 @@ export default function OrdersPage() {
       }
     } catch (err) {
       console.error("Failed to fetch orders", err);
-      alert("Failed to fetch orders");
+      toast({
+        title: "Error",
+        description: "Failed to fetch orders. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -64,9 +69,16 @@ export default function OrdersPage() {
         await API.put(`/orders/complete/${orderId}`);
       }
       fetchOrders();
-      alert(`Order status changed to ${newStatus}.`);
+      toast({
+        title: "Order Updated",
+        description: `Order has been marked as ${newStatus}.`,
+      });
     } catch (err: any) {
-      alert(err?.response?.data?.message || "Failed to update order");
+      toast({
+        title: "Error",
+        description: err?.response?.data?.message || "Failed to update order",
+        variant: "destructive",
+      });
     }
   };
 
@@ -143,7 +155,10 @@ export default function OrdersPage() {
   };
 
   return (
-    <div title="Order Tracking">
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Orders</h1>
+      </div>
       <div className="space-y-6 animate-fade-in">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>

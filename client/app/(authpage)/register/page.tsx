@@ -17,8 +17,10 @@ import Link from "next/link";
 import API from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
 
 const Register = () => {
+  const { toast } = useToast();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,7 +34,11 @@ const Register = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match");
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -45,13 +51,24 @@ const Register = () => {
         password,
       });
 
-      alert("Registration successful. Wait for admin approval.");
+      toast({
+        title: "Registration successful",
+        description: "Please wait for admin approval.",
+      });
       router.push("/login");
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        alert(error.response?.data?.message || "Registration failed");
+        toast({
+          title: "Error",
+          description: error.response?.data?.message || "Registration failed",
+          variant: "destructive",
+        });
       } else {
-        alert("Something went wrong");
+        toast({
+          title: "Error",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
       }
     } finally {
       setIsLoading(false);

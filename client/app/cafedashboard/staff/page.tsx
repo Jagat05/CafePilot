@@ -51,9 +51,8 @@ import {
   Coffee,
   CreditCard,
 } from "lucide-react";
-import DashboardLayout from "../layout";
-// import { useToast } from '@/hooks/use-toast';
-// import { format } from 'date-fns';
+import API from "@/lib/axios";
+import { useToast } from "@/hooks/use-toast";
 
 const roleIcons: Record<string, React.ReactNode> = {
   admin: <Shield className="h-4 w-4" />,
@@ -70,6 +69,7 @@ const roleColors: Record<string, string> = {
 };
 
 export default function StaffPage() {
+  const { toast } = useToast();
   interface StaffMember {
     id: string;
     name: string;
@@ -81,15 +81,10 @@ export default function StaffPage() {
     avatar?: string;
   }
   const [staff, setStaff] = useState<StaffMember[]>(mockStaff);
-  // const [staff, setStaff] = useState<StaffMember[]>();
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<StaffMember | null>(null);
-  // const { user } = useAuth();
-  // const { toast } = useToast();
-
-  // const isAdmin = user?.role === "admin";
 
   const [formData, setFormData] = useState({
     name: "",
@@ -129,16 +124,11 @@ export default function StaffPage() {
 
   const handleSave = () => {
     if (!formData.name || !formData.email) {
-      alert({
+      toast({
         title: "Validation Error",
         description: "Please fill in all required fields.",
         variant: "destructive",
       });
-      // toast({
-      //   title: "Validation Error",
-      //   description: "Please fill in all required fields.",
-      //   variant: "destructive",
-      // });
       return;
     }
 
@@ -148,14 +138,10 @@ export default function StaffPage() {
           member.id === editingMember.id ? { ...member, ...formData } : member,
         ),
       );
-      alert({
+      toast({
         title: "Staff updated",
         description: `${formData.name}'s profile has been updated.`,
       });
-      // toast({
-      //   title: "Staff updated",
-      //   description: `${formData.name}'s profile has been updated.`,
-      // });
     } else {
       const newMember: StaffMember = {
         id: Date.now().toString(),
@@ -164,14 +150,10 @@ export default function StaffPage() {
         hireDate: new Date(),
       };
       setStaff([...staff, newMember]);
-      alert({
+      toast({
         title: "Staff added",
         description: `${formData.name} has been added to the team.`,
       });
-      // toast({
-      //   title: "Staff added",
-      //   description: `${formData.name} has been added to the team.`,
-      // });
     }
 
     setIsDialogOpen(false);
@@ -180,14 +162,10 @@ export default function StaffPage() {
   const handleDelete = (id: string) => {
     const member = staff.find((m) => m.id === id);
     setStaff(staff.filter((m) => m.id !== id));
-    alert({
+    toast({
       title: "Staff removed",
       description: `${member?.name} has been removed from the team.`,
     });
-    // toast({
-    //   title: "Staff removed",
-    //   description: `${member?.name} has been removed from the team.`,
-    // });
   };
 
   const toggleStatus = (id: string) => {
@@ -195,9 +173,9 @@ export default function StaffPage() {
       staff.map((member) =>
         member.id === id
           ? {
-              ...member,
-              status: member.status === "active" ? "inactive" : "active",
-            }
+            ...member,
+            status: member.status === "active" ? "inactive" : "active",
+          }
           : member,
       ),
     );
