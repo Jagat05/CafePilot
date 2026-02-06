@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import {
   Card,
@@ -30,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { mockMenuItems } from "@/data/mockData";
 import { MenuItem } from "@/types";
 import {
   Plus,
@@ -43,7 +42,7 @@ import {
   GlassWater,
 } from "lucide-react";
 import DashboardLayout from "../layout";
-// import { useToast } from '@/hooks/use-toast';
+import API from "@/lib/axios";
 
 const categoryIcons: Record<string, React.ReactNode> = {
   coffee: <Coffee className="h-4 w-4" />,
@@ -55,12 +54,12 @@ const categoryIcons: Record<string, React.ReactNode> = {
 };
 
 export default function MenuPage() {
-  const [items, setItems] = useState<MenuItem[]>(mockMenuItems);
+  const [items, setItems] = useState<MenuItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
-  // const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -69,6 +68,35 @@ export default function MenuPage() {
     description: "",
     available: true,
   });
+
+  // Fetch menu items from backend
+  const fetchMenuItems = async () => {
+    try {
+      setIsLoading(true);
+      const { data } = await API.get("/menu/items");
+      if (data.menuItems) {
+        setItems(
+          data.menuItems.map((item: any) => ({
+            id: item._id,
+            name: item.name,
+            category: item.category,
+            price: item.price,
+            description: item.description,
+            available: item.available,
+          }))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to fetch menu items", err);
+      alert("Failed to fetch menu items");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMenuItems();
+  }, []);
 
   const filteredItems = items.filter((item) => {
     const matchesSearch = item.name
@@ -102,86 +130,74 @@ export default function MenuPage() {
     setIsDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name || !formData.price) {
-      alert({
-        title: "Validation Error",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      // toast({
-      //   title: "Validation Error",
-      //   description: "Please fill in all required fields.",
-      //   variant: "destructive",
-      // });
+      alert("Please fill in all required fields.");
       return;
     }
 
-    if (editingItem) {
-      setItems(
-        items.map((item) =>
-          item.id === editingItem.id
-            ? {
-                ...item,
-                name: formData.name,
-                category: formData.category,
-                price: parseFloat(formData.price),
-                description: formData.description,
-                available: formData.available,
-              }
-            : item,
-        ),
-      );
-      alert({
-        title: "Item updated",
-        description: `${formData.name} has been updated.`,
-      });
-      // toast({
-      //   title: "Item updated",
-      //   description: `${formData.name} has been updated.`,
-      // });
-    } else {
-      const newItem: MenuItem = {
-        id: Date.now().toString(),
-        name: formData.name,
-        category: formData.category,
-        price: parseFloat(formData.price),
-        description: formData.description,
-        available: formData.available,
-      };
-      setItems([...items, newItem]);
-      alert({
-        title: "Item added",
-        description: `${formData.name} has been added to the menu.`,
-      });
-      // toast({
-      //   title: "Item added",
-      //   description: `${formData.name} has been added to the menu.`,
-      // });
+    try {
+      if (editingItem) {
+        // Update existing item
+        await API.put(`/menu/update/${editingItem.id}`, {
+          name: formData.name,
+          category: formData.category,
+          price: parseFloat(formData.price),
+          description: formData.description,
+          available: formData.available,
+        });
+        alert(`${formData.name} has been updated.`);
+      } else {
+        // Create new item
+        await API.post("/menu/create", {
+          name: formData.name,
+          category: formData.category,
+          price: parseFloat(formData.price),
+          description: formData.description,
+          available: formData.available,
+        });
+        alert(`${formData.name} has been added to the menu.`);
+      }
+
+      fetchMenuItems();
+      setIsDialogOpen(false);
+    } catch (err: any) {
+      alert(err?.response?.data?.message || "Failed to save menu item");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    const item = items.find((i) => i.id === id);
+
+    if (!confirm(`Are you sure you want to delete ${item?.name}?`)) {
+      return;
     }
 
-    setIsDialogOpen(false);
+    try {
+      await API.delete(`/menu/delete/${id}`);
+      fetchMenuItems();
+      alert(`${item?.name} has been removed.`);
+    } catch (err: any) {
+      alert(err?.response?.data?.message || "Failed to delete menu item");
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const toggleAvailability = async (id: string) => {
     const item = items.find((i) => i.id === id);
-    setItems(items.filter((i) => i.id !== id));
-    alert({
-      title: "Item deleted",
-      description: `${item?.name} has been removed.`,
-    });
-    // toast({
-    //   title: "Item deleted",
-    //   description: `${item?.name} has been removed.`,
-    // });
-  };
+    if (!item) return;
 
-  const toggleAvailability = (id: string) => {
-    setItems(
-      items.map((item) =>
-        item.id === id ? { ...item, available: !item.available } : item,
-      ),
-    );
+    try {
+      await API.put(`/menu/update/${id}`, {
+        name: item.name,
+        category: item.category,
+        price: item.price,
+        description: item.description,
+        available: !item.available,
+      });
+      fetchMenuItems();
+    } catch (err: any) {
+      alert(err?.response?.data?.message || "Failed to update availability");
+    }
   };
 
   return (

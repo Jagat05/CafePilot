@@ -1,21 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table, MenuItem } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Plus, Minus, Trash2 } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import { mockMenuItems } from "@/data/mockData";
+import API from "@/lib/axios";
+
+interface Order {
+    _id: string;
+    items: Array<{
+        menuItem: string;
+        name: string;
+        price: number;
+        quantity: number;
+    }>;
+}
 
 interface CreateOrderDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     table: Table | null;
-    onSubmit: (orderData: { items: { menuItemId: string; quantity: number }[]; customerName: string }) => void;
+    existingOrder?: Order | null;
+    onSubmit: (orderData: { items: { menuItemId: string; quantity: number; name: string; price: number }[] }) => void;
+    onClearTable?: () => void;
 }
 
-export function CreateOrderDialog({ open, onOpenChange, table, onSubmit }: CreateOrderDialogProps) {
-    const [customerName, setCustomerName] = useState("");
+export function CreateOrderDialog({ open, onOpenChange, table, existingOrder, onSubmit, onClearTable }: CreateOrderDialogProps) {
+    const [menuItems, setMenuItems] = useState<MenuItem[]>(mockMenuItems);
     const [items, setItems] = useState<{ menuItemId: string; quantity: number }[]>([]);
     const [selectedItemToAdd, setSelectedItemToAdd] = useState<string>("");
 
@@ -45,18 +58,65 @@ export function CreateOrderDialog({ open, onOpenChange, table, onSubmit }: Creat
 
     const calculateTotal = () => {
         return items.reduce((sum, item) => {
-            const menuItem = mockMenuItems.find(m => m.id === item.menuItemId);
+            const menuItem = menuItems.find(m => m.id === item.menuItemId);
             return sum + (menuItem?.price || 0) * item.quantity;
         }, 0);
     };
 
+    // Fetch menu items from backend
+    useEffect(() => {
+        const fetchMenuItems = async () => {
+            try {
+                const { data } = await API.get("/menu/items");
+                if (data.menuItems && data.menuItems.length > 0) {
+                    setMenuItems(data.menuItems.map((item: any) => ({
+                        id: item._id,
+                        name: item.name,
+                        category: item.category,
+                        price: item.price,
+                        description: item.description,
+                        available: item.available,
+                    })));
+                }
+            } catch (err) {
+                console.error("Failed to fetch menu items, using mock data", err);
+            }
+        };
+
+        if (open) {
+            fetchMenuItems();
+        }
+    }, [open]);
+
+    // Load existing order items when editing
+    useEffect(() => {
+        if (existingOrder && existingOrder.items.length > 0) {
+            setItems(existingOrder.items.map(item => ({
+                menuItemId: item.menuItem,
+                quantity: item.quantity,
+            })));
+        } else {
+            setItems([]);
+        }
+    }, [existingOrder]);
+
     const handleSubmit = () => {
-        if (!customerName || items.length === 0) return;
-        onSubmit({ items, customerName });
+        if (items.length === 0) return;
+
+        // Include name and price in the submission
+        const itemsWithDetails = items.map(item => {
+            const menuItem = menuItems.find(m => m.id === item.menuItemId);
+            return {
+                menuItemId: item.menuItemId,
+                quantity: item.quantity,
+                name: menuItem?.name || "Unknown",
+                price: menuItem?.price || 0,
+            };
+        });
+
+        onSubmit({ items: itemsWithDetails });
         // Reset
-        setCustomerName("");
         setItems([]);
-        onOpenChange(false);
     };
 
     if (!table) return null;
@@ -65,18 +125,12 @@ export function CreateOrderDialog({ open, onOpenChange, table, onSubmit }: Creat
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle>New Order - Table {table.number}</DialogTitle>
+                    <DialogTitle>
+                        {existingOrder ? "Edit Order" : "New Order"} - Table {table.number}
+                    </DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Customer Name</label>
-                        <Input
-                            placeholder="Enter customer name"
-                            value={customerName}
-                            onChange={(e) => setCustomerName(e.target.value)}
-                        />
-                    </div>
 
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Add Items</label>
@@ -86,7 +140,7 @@ export function CreateOrderDialog({ open, onOpenChange, table, onSubmit }: Creat
                                     <SelectValue placeholder="Select menu item" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {mockMenuItems.map(item => (
+                                    {menuItems.filter(item => item.available).map(item => (
                                         <SelectItem key={item.id} value={item.id}>
                                             {item.name} - ${item.price.toFixed(2)}
                                         </SelectItem>
@@ -104,7 +158,7 @@ export function CreateOrderDialog({ open, onOpenChange, table, onSubmit }: Creat
                             <p className="text-sm text-muted-foreground text-center py-4">No items added yet</p>
                         ) : (
                             items.map((item, idx) => {
-                                const menuItem = mockMenuItems.find(m => m.id === item.menuItemId);
+                                const menuItem = menuItems.find(m => m.id === item.menuItemId);
                                 return (
                                     <div key={idx} className="flex items-center justify-between text-sm">
                                         <div className="flex-1">
@@ -132,9 +186,27 @@ export function CreateOrderDialog({ open, onOpenChange, table, onSubmit }: Creat
                     </div>
                 </div>
 
+
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                    <Button onClick={handleSubmit} disabled={!customerName || items.length === 0}>Create Order</Button>
+                    <div className="flex justify-between w-full">
+                        <div>
+                            {existingOrder && onClearTable && (
+                                <Button
+                                    variant="outline"
+                                    onClick={onClearTable}
+                                    className="border-green-500 text-green-600 hover:bg-green-50"
+                                >
+                                    Clear Table
+                                </Button>
+                            )}
+                        </div>
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                            <Button onClick={handleSubmit} disabled={items.length === 0}>
+                                {existingOrder ? "Update Order" : "Create Order"}
+                            </Button>
+                        </div>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

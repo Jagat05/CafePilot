@@ -38,3 +38,23 @@ export const getTables = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch tables" });
   }
 };
+
+// Delete table
+export const deleteTable = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const table = await Table.findOneAndDelete({
+      _id: id,
+      owner: req.user._id,
+    });
+
+    if (!table) {
+      return res.status(404).json({ message: "Table not found" });
+    }
+
+    res.json({ success: true, message: "Table deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete table" });
+  }
+};
