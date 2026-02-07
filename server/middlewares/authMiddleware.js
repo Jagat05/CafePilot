@@ -1,14 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../model/UserSchema.js";
+import Settings from "../model/SettingsSchema.js";
 
 const authMiddleware = async (req, res, next) => {
   try {
-    // const header = req.headers.authorization;
-    // if (!header || !header.startsWith("Bearer ")) {
-    //   return res.status(401).json({ message: "No token" });
-    // }
-
-    // const token = header.split(" ")[1];
     const token = req.cookies.token;
     if (!token) {
       return res.status(401).json({ message: "Not authenticated" });
@@ -18,6 +13,15 @@ const authMiddleware = async (req, res, next) => {
     const user = await User.findById(decoded.id).select("-password");
     if (!user || user.status !== "approved") {
       return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // CHECK MAINTENANCE MODE
+    const settings = await Settings.findOne();
+    if (settings?.maintenanceMode && user.role !== "admin") {
+      return res.status(503).json({
+        success: false,
+        message: "System is under maintenance. Please try again later.",
+      });
     }
 
     req.user = user;

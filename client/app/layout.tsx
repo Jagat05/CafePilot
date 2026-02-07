@@ -19,6 +19,8 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from "@/components/ui/toaster";
+import AnnouncementBanner from "@/components/AnnouncementBanner";
+import { BannerProvider } from "@/contexts/BannerContext";
 
 export default function RootLayout({
   children,
@@ -30,8 +32,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* <ReduxProvider> {children}</ReduxProvider> */}
-        {children}
+        <BannerProvider>
+          <AnnouncementBanner />
+          {/* <ReduxProvider> {children}</ReduxProvider> */}
+          {children}
+        </BannerProvider>
         <Toaster />
       </body>
     </html>

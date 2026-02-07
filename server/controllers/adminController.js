@@ -1,4 +1,5 @@
 import User from "../model/UserSchema.js";
+import Settings from "../model/SettingsSchema.js";
 import bcrypt from "bcryptjs";
 
 /* =====================
@@ -94,4 +95,64 @@ export const approveOwner = async (req, res) => {
     message: "Owner approved",
     owner,
   });
+};
+
+/* =====================
+   GLOBAL SETTINGS
+   ===================== */
+export const getGlobalSettings = async (req, res) => {
+  try {
+    let settings = await Settings.findOne();
+    if (!settings) {
+      settings = await Settings.create({});
+    }
+    res.json({ success: true, settings });
+  } catch {
+    res.status(500).json({ success: false, message: "Failed to fetch settings" });
+  }
+};
+
+export const updateGlobalSettings = async (req, res) => {
+  try {
+    const { announcement, maintenanceMode } = req.body;
+    let settings = await Settings.findOne();
+
+    if (!settings) {
+      settings = new Settings();
+    }
+
+    if (announcement !== undefined) settings.announcement = announcement;
+
+    // Check if maintenance mode is being toggled
+    const maintenanceToggledOn = maintenanceMode === true && settings.maintenanceMode === false;
+
+    if (maintenanceMode !== undefined) {
+      settings.maintenanceMode = maintenanceMode;
+    }
+
+    await settings.save();
+
+    // Broadcast updates via Socket.io
+    if (req.io) {
+      if (announcement !== undefined) {
+        req.io.emit("new-announcement", settings.announcement);
+      }
+
+      if (maintenanceMode !== undefined) {
+        req.io.emit("maintenance-mode", {
+          active: settings.maintenanceMode,
+          forceLogout: maintenanceToggledOn
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      message: "Settings updated successfully",
+      settings,
+    });
+  } catch (error) {
+    console.error("Update settings error:", error);
+    res.status(500).json({ success: false, message: "Failed to update settings" });
+  }
 };
