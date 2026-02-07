@@ -1,4 +1,6 @@
 "use client";
+
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -8,69 +10,174 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  mockOrders,
-  mockInventory,
-  mockMenuItems,
-  mockStaff,
-} from "@/data/mockData";
-import {
   Coffee,
-  DollarSign,
   ShoppingBag,
-  AlertTriangle,
   Users,
   TrendingUp,
+  BanknoteArrowDown,
+  UtensilsCrossed,
 } from "lucide-react";
-import DashboardLayout from "../layout";
+import API from "@/lib/axios";
+import { useToast } from "@/hooks/use-toast";
+
+type OrderStatus = "active" | "completed";
+
+interface OrderItem {
+  menuItem?: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+interface Order {
+  _id: string;
+  table: { tableNumber: number } | string;
+  items: OrderItem[];
+  status: OrderStatus;
+  totalAmount: number;
+  createdAt: string;
+}
+
+interface Table {
+  _id: string;
+  tableNumber: number;
+  capacity: number;
+  status: string;
+}
 
 export default function Dashboard() {
-  const pendingOrders = mockOrders.filter(
-    (o) => o.status === "pending" || o.status === "preparing",
-  ).length;
-  const totalRevenue = mockOrders
-    .filter((o) => o.status === "completed")
-    .reduce((sum, o) => sum + o.total, 0);
-  const lowStockItems = mockInventory.filter(
-    (i) => i.quantity <= i.reorderLevel,
-  ).length;
-  const activeStaff = mockStaff.filter((s) => s.status === "active").length;
+  const { toast } = useToast();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [menuCount, setMenuCount] = useState(0);
+  const [staffCount, setStaffCount] = useState(0);
+  const [tables, setTables] = useState<Table[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const recentOrders = mockOrders.slice(0, 5);
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setIsLoading(true);
+        const [ordersRes, menuRes, staffRes, tablesRes] = await Promise.all([
+          API.get("/orders/all"),
+          API.get("/menu/items"),
+          API.get("/staff"),
+          API.get("/tables/table"),
+        ]);
+
+        if (ordersRes.data?.orders) setOrders(ordersRes.data.orders);
+        if (menuRes.data?.menuItems)
+          setMenuCount(menuRes.data.menuItems.length);
+        if (staffRes.data?.staff)
+          setStaffCount(
+            staffRes.data.staff.filter(
+              (s: { status: string }) => s.status === "active",
+            ).length,
+          );
+        if (tablesRes.data?.tables) setTables(tablesRes.data.tables);
+      } catch (err) {
+        console.error("Dashboard fetch failed", err);
+        toast({
+          title: "Error",
+          description: "Failed to load dashboard data",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [toast]);
+
+  const activeOrders = orders.filter((o) => o.status === "active").length;
+  const totalRevenue = orders
+    .filter((o) => o.status === "completed")
+    .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+  const occupiedTables = tables.filter((t) => t.status === "occupied").length;
+
+  const recentOrders = orders.slice(0, 5);
 
   const statsCards = [
     {
       title: "Active Orders",
-      value: pendingOrders,
+      value: activeOrders,
       description: "Orders being processed",
       icon: ShoppingBag,
-      trend: "+12%",
+      trend: null as string | null,
       trendUp: true,
     },
     {
-      title: "Today's Revenue",
-      value: `$${totalRevenue.toFixed(2)}`,
-      description: "Total sales today",
-      icon: DollarSign,
-      trend: "+8%",
+      title: "Revenue (completed)",
+      value: `NRS. ${totalRevenue.toFixed(2)}`,
+      description: "From completed orders",
+      icon: BanknoteArrowDown,
+      trend: null,
       trendUp: true,
     },
     {
       title: "Menu Items",
-      value: mockMenuItems.length,
+      value: menuCount,
       description: "Available products",
       icon: Coffee,
-      trend: "0%",
+      trend: null,
       trendUp: true,
     },
     {
       title: "Active Staff",
-      value: activeStaff,
+      value: staffCount,
       description: "Team members on duty",
       icon: Users,
-      trend: "+2",
+      trend: null,
       trendUp: true,
     },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="warm-shadow">
+              <CardHeader className="pb-2">
+                <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 w-24 animate-pulse rounded bg-muted" />
+                <div className="mt-2 h-4 w-40 animate-pulse rounded bg-muted" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="warm-shadow">
+            <CardHeader>
+              <CardTitle>Recent Orders</CardTitle>
+              <CardDescription>Loading…</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-16 animate-pulse rounded-lg border bg-muted"
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="warm-shadow">
+            <CardHeader>
+              <CardTitle>Table Status</CardTitle>
+              <CardDescription>Loading…</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-24 animate-pulse rounded-lg bg-muted" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -88,14 +195,16 @@ export default function Dashboard() {
               <CardContent>
                 <div className="text-2xl font-bold">{stat.value}</div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span
-                    className={
-                      stat.trendUp ? "text-success" : "text-destructive"
-                    }
-                  >
-                    <TrendingUp className="mr-1 inline h-3 w-3" />
-                    {stat.trend}
-                  </span>
+                  {stat.trend != null && (
+                    <span
+                      className={
+                        stat.trendUp ? "text-success" : "text-destructive"
+                      }
+                    >
+                      <TrendingUp className="mr-1 inline h-3 w-3" />
+                      {stat.trend}
+                    </span>
+                  )}
                   <span>{stat.description}</span>
                 </div>
               </CardContent>
@@ -108,85 +217,106 @@ export default function Dashboard() {
           <Card className="warm-shadow">
             <CardHeader>
               <CardTitle>Recent Orders</CardTitle>
-              <CardDescription>Latest customer orders</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentOrders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="flex items-center justify-between rounded-lg border p-3"
-                  >
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">
-                        {order.customerName}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Table {order.tableNumber} • {order.items.length} items
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-semibold">
-                        ${order.total.toFixed(2)}
-                      </span>
-                      <Badge
-                        variant={
-                          order.status === "ready"
-                            ? "default"
-                            : order.status === "preparing"
-                              ? "secondary"
-                              : "outline"
-                        }
-                      >
-                        {order.status}
-                      </Badge>
-                    </div>
+                {recentOrders.length === 0 ? (
+                  <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+                    No orders yet. Create orders from the Orders page.
                   </div>
-                ))}
+                ) : (
+                  recentOrders.map((order) => {
+                    const tableNum =
+                      typeof order.table === "object" &&
+                      order.table?.tableNumber != null
+                        ? order.table.tableNumber
+                        : "—";
+                    const itemCount =
+                      order.items?.reduce((s, i) => s + (i.quantity || 0), 0) ||
+                      0;
+                    return (
+                      <div
+                        key={order._id}
+                        className="flex items-center justify-between rounded-lg border p-3"
+                      >
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">
+                            Table {tableNum}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {itemCount} items • NRS.{" "}
+                            {(order.totalAmount || 0).toFixed(2)}
+                          </p>
+                        </div>
+                        <Badge
+                          variant={
+                            order.status === "completed"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
+                          {order.status}
+                        </Badge>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Low Stock Alerts */}
+          {/* Table Status */}
           <Card className="warm-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-warning" />
-                Inventory Alerts
+                <UtensilsCrossed className="h-5 w-5 text-primary" />
+                Table Status
               </CardTitle>
-              <CardDescription>Items that need restocking</CardDescription>
+              <CardDescription>
+                {occupiedTables} of {tables.length} tables occupied
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {lowStockItems > 0 ? (
-                  mockInventory
-                    .filter((i) => i.quantity <= i.reorderLevel)
-                    .map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between rounded-lg border border-warning/30 bg-warning/5 p-3"
-                      >
-                        <div className="space-y-1">
-                          <p className="text-sm font-medium">{item.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Supplier: {item.supplier}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold text-warning">
-                            {item.quantity} {item.unit}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Reorder at {item.reorderLevel}
-                          </p>
-                        </div>
-                      </div>
-                    ))
+                {tables.length === 0 ? (
+                  <div className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
+                    No tables yet. Add tables from the Tables page.
+                  </div>
                 ) : (
-                  <div className="rounded-lg border border-success/30 bg-success/5 p-4 text-center">
-                    <p className="text-sm text-success">
-                      All items are well-stocked!
-                    </p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {tables.map((table) => (
+                      <div
+                        key={table._id}
+                        className={`flex items-center justify-between rounded-lg border p-3 ${
+                          table.status === "occupied"
+                            ? "border-warning/30 bg-warning/5"
+                            : "border-success/30 bg-success/5"
+                        }`}
+                      >
+                        <div>
+                          <p className="text-sm font-medium">
+                            Table {table.tableNumber}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {table.capacity} seats
+                          </p>
+                        </div>
+                        <Badge
+                          variant={
+                            table.status === "occupied"
+                              ? "secondary"
+                              : "outline"
+                          }
+                          className={
+                            table.status === "available"
+                              ? "border-success/50 text-success"
+                              : ""
+                          }
+                        >
+                          {table.status}
+                        </Badge>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

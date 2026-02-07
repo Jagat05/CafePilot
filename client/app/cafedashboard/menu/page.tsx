@@ -50,6 +50,14 @@ import {
   Sandwich,
   Cake,
   GlassWater,
+  Salad,
+  Pizza,
+  Beer,
+  CupSoda,
+  IceCream,
+  Soup,
+  Hamburger,
+  ChefHat,
 } from "lucide-react";
 import API from "@/lib/axios";
 import { useToast } from "@/hooks/use-toast";
@@ -57,10 +65,16 @@ import { useToast } from "@/hooks/use-toast";
 const categoryIcons: Record<string, React.ReactNode> = {
   coffee: <Coffee className="h-4 w-4" />,
   tea: <GlassWater className="h-4 w-4" />,
-  pastry: <Cake className="h-4 w-4" />,
+  pizza: <Pizza className="h-4 w-4" />,
+  alcohol: <Beer className="h-4 w-4" />,
+  salad: <Salad className="h-4 w-4" />,
+  drink: <CupSoda className="h-4 w-4" />,
+  icecream: <IceCream className="h-4 w-4" />,
+  chaumin: <Soup className="h-4 w-4" />,
+  burger: <Hamburger className="h-4 w-4" />,
   sandwich: <Sandwich className="h-4 w-4" />,
   dessert: <Cake className="h-4 w-4" />,
-  beverage: <GlassWater className="h-4 w-4" />,
+  Other: <ChefHat className="h-4 w-4" />,
 };
 
 export default function MenuPage() {
@@ -97,7 +111,7 @@ export default function MenuPage() {
             price: item.price,
             description: item.description,
             available: item.available,
-          }))
+          })),
         );
       }
     } catch (err) {
@@ -207,7 +221,8 @@ export default function MenuPage() {
     } catch (err: any) {
       toast({
         title: "Error",
-        description: err?.response?.data?.message || "Failed to delete menu item",
+        description:
+          err?.response?.data?.message || "Failed to delete menu item",
         variant: "destructive",
       });
     } finally {
@@ -232,7 +247,8 @@ export default function MenuPage() {
     } catch (err: any) {
       toast({
         title: "Error",
-        description: err?.response?.data?.message || "Failed to update availability",
+        description:
+          err?.response?.data?.message || "Failed to update availability",
         variant: "destructive",
       });
     }
@@ -269,10 +285,16 @@ export default function MenuPage() {
               <SelectItem value="all">All Categories</SelectItem>
               <SelectItem value="coffee">Coffee</SelectItem>
               <SelectItem value="tea">Tea</SelectItem>
-              <SelectItem value="pastry">Pastry</SelectItem>
-              <SelectItem value="sandwich">Sandwich</SelectItem>
+              <SelectItem value="pizza">Pizza</SelectItem>
+              <SelectItem value="alcohol">Alcohol</SelectItem>
+              <SelectItem value="salad">Salad</SelectItem>
+              <SelectItem value="drinks">Soft Drinks</SelectItem>
+              <SelectItem value="ice-cream">Ice-Cream</SelectItem>
+              <SelectItem value="chaumin">Chaumin</SelectItem>
               <SelectItem value="dessert">Dessert</SelectItem>
-              <SelectItem value="beverage">Beverage</SelectItem>
+              <SelectItem value="burger">Burger</SelectItem>
+              <SelectItem value="sandwich">Sandwich</SelectItem>
+              <SelectItem value="others">Others</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -324,17 +346,24 @@ export default function MenuPage() {
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
                       <SelectItem value="coffee">Coffee</SelectItem>
                       <SelectItem value="tea">Tea</SelectItem>
-                      <SelectItem value="pastry">Pastry</SelectItem>
-                      <SelectItem value="sandwich">Sandwich</SelectItem>
+                      <SelectItem value="pizza">Pizza</SelectItem>
+                      <SelectItem value="alcohol">Alcohol</SelectItem>
+                      <SelectItem value="salad">Salad</SelectItem>
+                      <SelectItem value="drinks">Soft Drinks</SelectItem>
+                      <SelectItem value="ice-cream">Ice-Cream</SelectItem>
+                      <SelectItem value="chaumin">Chaumin</SelectItem>
                       <SelectItem value="dessert">Dessert</SelectItem>
-                      <SelectItem value="beverage">Beverage</SelectItem>
+                      <SelectItem value="burger">Burger</SelectItem>
+                      <SelectItem value="sandwich">Sandwich</SelectItem>
+                      <SelectItem value="others">Others</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="price">Price ($)</Label>
+                  <Label htmlFor="price">Price (NRS)</Label>
                   <Input
                     id="price"
                     type="number"
@@ -391,7 +420,9 @@ export default function MenuPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
                     <div className="rounded-full bg-primary/10 p-2 text-primary">
-                      {categoryIcons[item.category] || <Coffee className="h-4 w-4" />}
+                      {categoryIcons[item.category] || (
+                        <Coffee className="h-4 w-4" />
+                      )}
                     </div>
                     <div>
                       <CardTitle className="text-base">{item.name}</CardTitle>
@@ -410,7 +441,9 @@ export default function MenuPage() {
                   {item.description}
                 </p>
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold">${item.price.toFixed(2)}</span>
+                  <span className="text-lg font-bold">
+                    NRS {item.price.toFixed(2)}
+                  </span>
                   <div className="flex items-center gap-1">
                     <Button
                       variant="ghost"
@@ -466,12 +499,17 @@ export default function MenuPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete <strong>{itemToDelete?.name}</strong>? This action cannot be undone.
+              Are you sure you want to delete{" "}
+              <strong>{itemToDelete?.name}</strong>? This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

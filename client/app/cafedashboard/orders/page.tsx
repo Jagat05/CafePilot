@@ -63,7 +63,10 @@ export default function OrdersPage() {
   const activeOrders = orders.filter((o) => o.status === "active");
   const completedOrders = orders.filter((o) => o.status === "completed");
 
-  const updateOrderStatus = async (orderId: string, newStatus: "active" | "completed") => {
+  const updateOrderStatus = async (
+    orderId: string,
+    newStatus: "active" | "completed",
+  ) => {
     try {
       if (newStatus === "completed") {
         await API.put(`/orders/complete/${orderId}`);
@@ -111,7 +114,7 @@ export default function OrdersPage() {
               </CardDescription>
             </div>
             <span className="text-xl font-bold text-primary">
-              ${(order.totalAmount || 0).toFixed(2)}
+              NRS. {(order.totalAmount || 0).toFixed(2)}
             </span>
           </div>
         </CardHeader>
@@ -124,7 +127,7 @@ export default function OrdersPage() {
                     {item.quantity}x {item.name}
                   </span>
                   <span className="text-muted-foreground">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    NRS. {(item.price * item.quantity).toFixed(2)}
                   </span>
                 </div>
               ))

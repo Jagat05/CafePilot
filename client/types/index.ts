@@ -1,7 +1,7 @@
 export interface MenuItem {
   id: string;
   name: string;
-  category: 'coffee' | 'tea' | 'pastry' | 'sandwich' | 'dessert' | 'beverage';
+  category: 'coffee' | 'tea' | 'pastry' | 'sandwich' | 'dessert' | 'beverage'| 'chaumin';
   price: number;
   description: string;
   available: boolean;
@@ -34,11 +34,13 @@ export interface StaffMember {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'manager' | 'barista' | 'cashier';
+  role: 'admin' | 'manager' | 'barista' | 'cashier' | 'cook' | 'helper';
   phone: string;
   status: 'active' | 'inactive';
   hireDate: Date;
   avatar?: string;
+  /** True when this row is the logged-in cafe owner (shown as admin) */
+  isOwner?: boolean;
 }
 
 export interface User {

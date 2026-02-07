@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import tableRouter from "./routes/tableRoutes.js";
 import orderRouter from "./routes/orderRoutes.js";
 import menuRouter from "./routes/menuRoutes.js";
+import staffRouter from "./routes/staffRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -32,6 +33,7 @@ app.use("/api/admin", adminRouter);
 app.use("/api/tables", tableRouter);
 app.use("/api/orders", orderRouter);
 app.use("/api/menu", menuRouter);
+app.use("/api/staff", staffRouter);
 
 app.get("/", (req, res) => {
   res.send("Cafe Pilot API running ☕");

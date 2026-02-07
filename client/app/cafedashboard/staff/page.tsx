@@ -1,10 +1,9 @@
 "use client";
-import { useState } from "react";
-// import { DashboardLayout } from '@/components/DashboardLayout';
+
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -38,9 +37,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { mockStaff } from "@/data/mockData";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { StaffMember } from "@/types";
-// import { useAuth } from '@/contexts/AuthContext';
 import {
   Plus,
   Search,
@@ -50,6 +57,8 @@ import {
   Shield,
   Coffee,
   CreditCard,
+  User2Icon,
+  ChefHat,
 } from "lucide-react";
 import API from "@/lib/axios";
 import { useToast } from "@/hooks/use-toast";
@@ -59,32 +68,51 @@ const roleIcons: Record<string, React.ReactNode> = {
   manager: <Shield className="h-4 w-4" />,
   barista: <Coffee className="h-4 w-4" />,
   cashier: <CreditCard className="h-4 w-4" />,
+  cook: <ChefHat className="h-4 w-4" />,
+  helper: <User2Icon className="h-4 w-4" />,
 };
 
 const roleColors: Record<string, string> = {
   admin: "bg-primary/10 text-primary border-primary/30",
   manager: "bg-success/10 text-success border-success/30",
   barista: "bg-warning/10 text-warning border-warning/30",
+  helper: "bg-warning/10 text-warning border-warning/30",
+  cook: "bg-warning/10 text-warning border-warning/30",
   cashier: "bg-secondary text-secondary-foreground",
 };
 
+function mapApiStaffToMember(item: {
+  _id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  role: string;
+  status: string;
+  hireDate?: string;
+  isOwner?: boolean;
+}): StaffMember {
+  return {
+    id: item._id,
+    name: item.name,
+    email: item.email,
+    phone: item.phone || "",
+    role: item.role as StaffMember["role"],
+    status: item.status as "active" | "inactive",
+    hireDate: item.hireDate ? new Date(item.hireDate) : new Date(),
+    isOwner: item.isOwner ?? false,
+  };
+}
+
 export default function StaffPage() {
   const { toast } = useToast();
-  interface StaffMember {
-    id: string;
-    name: string;
-    email: string;
-    role: "admin" | "manager" | "barista" | "cashier";
-    phone: string;
-    status: "active" | "inactive";
-    hireDate: Date;
-    avatar?: string;
-  }
-  const [staff, setStaff] = useState<StaffMember[]>(mockStaff);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<StaffMember | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<StaffMember | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -92,6 +120,29 @@ export default function StaffPage() {
     phone: "",
     role: "barista" as StaffMember["role"],
   });
+
+  const fetchStaff = async () => {
+    try {
+      setIsLoading(true);
+      const { data } = await API.get("/staff");
+      if (data.staff) {
+        setStaff(data.staff.map(mapApiStaffToMember));
+      }
+    } catch (err) {
+      console.error("Failed to fetch staff", err);
+      toast({
+        title: "Error",
+        description: "Failed to load staff",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStaff();
+  }, []);
 
   const filteredStaff = staff.filter((member) => {
     const matchesSearch =
@@ -122,7 +173,7 @@ export default function StaffPage() {
     setIsDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name || !formData.email) {
       toast({
         title: "Validation Error",
@@ -132,53 +183,88 @@ export default function StaffPage() {
       return;
     }
 
-    if (editingMember) {
-      setStaff(
-        staff.map((member) =>
-          member.id === editingMember.id ? { ...member, ...formData } : member,
-        ),
-      );
+    try {
+      if (editingMember) {
+        await API.put(`/staff/update/${editingMember.id}`, {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          role: formData.role,
+        });
+        toast({
+          title: "Staff updated",
+          description: `${formData.name}'s profile has been updated.`,
+        });
+      } else {
+        await API.post("/staff/create", {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          role: formData.role,
+        });
+        toast({
+          title: "Staff added",
+          description: `${formData.name} has been added to the team.`,
+        });
+      }
+      fetchStaff();
+      setIsDialogOpen(false);
+    } catch (err: any) {
       toast({
-        title: "Staff updated",
-        description: `${formData.name}'s profile has been updated.`,
-      });
-    } else {
-      const newMember: StaffMember = {
-        id: Date.now().toString(),
-        ...formData,
-        status: "active",
-        hireDate: new Date(),
-      };
-      setStaff([...staff, newMember]);
-      toast({
-        title: "Staff added",
-        description: `${formData.name} has been added to the team.`,
+        title: "Error",
+        description: err?.response?.data?.message || "Failed to save staff member",
+        variant: "destructive",
       });
     }
-
-    setIsDialogOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    const member = staff.find((m) => m.id === id);
-    setStaff(staff.filter((m) => m.id !== id));
-    toast({
-      title: "Staff removed",
-      description: `${member?.name} has been removed from the team.`,
-    });
+  const handleDeleteClick = (member: StaffMember) => {
+    setMemberToDelete(member);
+    setConfirmDeleteOpen(true);
   };
 
-  const toggleStatus = (id: string) => {
-    setStaff(
-      staff.map((member) =>
-        member.id === id
-          ? {
-            ...member,
-            status: member.status === "active" ? "inactive" : "active",
-          }
-          : member,
-      ),
-    );
+  const handleDeleteConfirm = async () => {
+    if (!memberToDelete) return;
+    try {
+      await API.delete(`/staff/delete/${memberToDelete.id}`);
+      toast({
+        title: "Staff removed",
+        description: `${memberToDelete.name} has been removed from the team.`,
+      });
+      fetchStaff();
+      setConfirmDeleteOpen(false);
+      setMemberToDelete(null);
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.response?.data?.message || "Failed to remove staff",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const toggleStatus = async (id: string) => {
+    try {
+      const { data } = await API.patch(`/staff/toggle-status/${id}`);
+      if (data.staff) {
+        setStaff((prev) =>
+          prev.map((m) =>
+            m.id === id ? mapApiStaffToMember(data.staff) : m,
+          ),
+        );
+        const member = staff.find((m) => m.id === id);
+        toast({
+          title: "Status updated",
+          description: `${member?.name} is now ${data.staff.status}.`,
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.response?.data?.message || "Failed to update status",
+        variant: "destructive",
+      });
+    }
   };
 
   const activeCount = staff.filter((s) => s.status === "active").length;
@@ -187,6 +273,8 @@ export default function StaffPage() {
     manager: staff.filter((s) => s.role === "manager").length,
     barista: staff.filter((s) => s.role === "barista").length,
     cashier: staff.filter((s) => s.role === "cashier").length,
+    helper: staff.filter((s) => s.role === "helper").length,
+    cook: staff.filter((s) => s.role === "cook").length,
   };
 
   return (
@@ -243,6 +331,8 @@ export default function StaffPage() {
                 <SelectItem value="manager">Manager</SelectItem>
                 <SelectItem value="barista">Barista</SelectItem>
                 <SelectItem value="cashier">Cashier</SelectItem>
+                <SelectItem value="helper">Helper</SelectItem>
+                <SelectItem value="cook">Cook</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -317,6 +407,8 @@ export default function StaffPage() {
                         <SelectItem value="manager">Manager</SelectItem>
                         <SelectItem value="barista">Barista</SelectItem>
                         <SelectItem value="cashier">Cashier</SelectItem>
+                        <SelectItem value="helper">Helper</SelectItem>
+                        <SelectItem value="cook">Cook</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -333,12 +425,17 @@ export default function StaffPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          ){/* // } */}
+          {/* )// } */}
         </div>
 
         {/* Staff Table */}
         <Card className="warm-shadow">
           <CardContent className="p-0">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">Loading staff...</p>
+              </div>
+            ) : (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -347,9 +444,7 @@ export default function StaffPage() {
                   <TableHead>Contact</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Hire Date</TableHead>
-                  {/* {isAdmin && ( */}
-                  <TableHead className="text-right">Actions</TableHead>)
-                  {/* } */}
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -374,74 +469,106 @@ export default function StaffPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={`gap-1 capitalize ${roleColors[member.role]}`}
-                      >
-                        {roleIcons[member.role]}
-                        {member.role}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={`gap-1 capitalize ${roleColors[member.role]}`}
+                        >
+                          {roleIcons[member.role]}
+                          {member.role}
+                        </Badge>
+                        {member.isOwner && (
+                          <Badge variant="secondary" className="text-xs">
+                            You
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {member.phone}
+                      {member.phone || "—"}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        {/* {isAdmin ? (
+                        {member.isOwner ? (
+                          <span className="text-sm capitalize text-muted-foreground">
+                            {member.status}
+                          </span>
+                        ) : (
                           <>
                             <Switch
                               checked={member.status === "active"}
                               onCheckedChange={() => toggleStatus(member.id)}
                             />
-                            <span className="text-sm">
-                              {member.status === "active"
-                                ? "Active"
-                                : "Inactive"}
+                            <span className="text-sm capitalize">
+                              {member.status}
                             </span>
                           </>
-                        ) : (
-                          <Badge
-                            variant={
-                              member.status === "active"
-                                ? "default"
-                                : "secondary"
-                            }
-                          >
-                            {member.status}
-                          </Badge>
-                        )
-                        } */}
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {/* {format(new Date(member.hireDate), "MMM d, yyyy")} */}
+                      {new Date(member.hireDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
                     </TableCell>
-                    {/* {isAdmin && (
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleOpenDialog(member)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(member.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    )} */}
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        {member.isOwner ? (
+                          <span className="text-xs text-muted-foreground">
+                            Logged-in owner
+                          </span>
+                        ) : (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleOpenDialog(member)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteClick(member)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+            )}
           </CardContent>
         </Card>
+
+        <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove staff member?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will remove {memberToDelete?.name} from the team. This
+                action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setMemberToDelete(null)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteConfirm}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Remove
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {filteredStaff.length === 0 && (
           <Card className="p-12 text-center">
