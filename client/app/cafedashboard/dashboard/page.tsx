@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import API from "@/lib/axios";
 import { useToast } from "@/hooks/use-toast";
+import AIAssistant from "@/components/ai/AIAssistant";
 
 type OrderStatus = "active" | "completed";
 
@@ -322,6 +323,8 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
+
+         <AIAssistant/>
         </div>
       </div>
     </div>
