@@ -5,13 +5,27 @@
 
 ## 🚀 Features
 
-- **📊 Admin Dashboard**: Real-time statistics and overview of cafe operations.
-- **🏠 Cafe Management**: Add, approve, and manage multiple cafes and their owners.
-- **📋 Menu & Orders**: Digital menu management and a robust order tracking system.
-- **🪑 Table Management**: Dynamic table addition and deletion for individual cafes.
-- **💼 Staff Oversight**: Manage staff roles and access levels.
-- **🤖 Gemini AI Integration**: Built-in AI assistant for smart insights and automated tasks.
-- **🔔 Real-time Notifications**: Instant updates using Socket.io integration.
+### 🔹 Level 1: Core Operations (Fundamentals)
+- [x] **🪑 Table Management**: Quickly add, edit or remove tables for optimized cafe layout.
+- [x] **📋 Digital Menu**: Create and manage your menu items with ease.
+- [x] **🏷️ Basic Ordering**: Simple interface for taking customer orders.
+- [x] **📄 Bill Generation**: Instant digital receipts for every completed order.
+- [x] **👤 User Profiles**: Personalized accounts for cafe owners and staff members.
+
+### 🔹 Level 2: Enhanced Management (Growth)
+- [x] **📊 Admin Dashboard**: Comprehensive oversight with real-time stats and business insights.
+- [x] **🏠 Cafe Management**: Multi-cafe support with owner verification and approval workflows.
+- [x] **💼 Staff Oversight**: Dynamic staff management with role-based access control (RBAC).
+- [x] **📈 Order Tracking**: Advanced order lifecycle management from kitchen to table.
+- [ ] **📦 Inventory Tracker**: (Upcoming) Monitor stock levels and receive low-inventory alerts.
+- [x] **📜 Sales Reports**: Detailed daily and monthly revenue reports for better planning.
+
+### 🔹 Level 3: Intelligent Ecosystem (Advanced)
+- [x] **🤖 Gemini AI Integration**: Empower your business with an AI assistant for menu optimization and analytics.
+- [x] **🔔 Real-time Notifications**: Instant system-wide alerts using Socket.io for orders and updates.
+- [x] **🔐 Secure Auth**: Robust JWT and cookie-based authentication for data protection.
+- [ ] **📱 QR Code Ordering**: (Future Scope) Enable contactless ordering via table-specific QR codes.
+- [ ] **💎 Loyalty Program**: Integrated customer reward system to boost retention.
 
 ## 📂 Project Structure
 
