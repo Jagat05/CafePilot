@@ -31,10 +31,57 @@ const statusConfig: Record<
   },
 };
 
+const startOfDay = (date: Date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+const isToday = (date: Date) => {
+  const todayStart = startOfDay(new Date());
+  return startOfDay(date).getTime() === todayStart.getTime();
+};
+
+const isYesterday = (date: Date) => {
+  const todayStart = startOfDay(new Date());
+  const yesterdayStart = new Date(todayStart);
+  yesterdayStart.setDate(todayStart.getDate() - 1);
+
+  return startOfDay(date).getTime() === yesterdayStart.getTime();
+};
+
+const isThisWeek = (date: Date) => {
+  const d = startOfDay(date);
+  const today = startOfDay(new Date());
+
+  // Last 7 days including today
+  const diffInMs = today.getTime() - d.getTime();
+  const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+  return diffInDays >= 0 && diffInDays < 7;
+};
+
+const isThisMonth = (date: Date) => {
+  const d = new Date(date);
+  const today = new Date();
+
+  return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth();
+};
+
+const isThisYear = (date: Date) => {
+  const d = new Date(date);
+  const today = new Date();
+
+  return d.getFullYear() === today.getFullYear();
+};
+
 export default function OrdersPage() {
   const { toast } = useToast();
   const [orders, setOrders] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("active");
+  const [historyFilter, setHistoryFilter] = useState<
+    "today" | "yesterday" | "week" | "month" | "year" | "all"
+  >("today");
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchOrders = async () => {
@@ -62,6 +109,35 @@ export default function OrdersPage() {
 
   const activeOrders = orders.filter((o) => o.status === "active");
   const completedOrders = orders.filter((o) => o.status === "completed");
+
+  const todayCompletedCount = completedOrders.filter((order) =>
+    isToday(new Date(order.createdAt)),
+  ).length;
+  const yesterdayCompletedCount = completedOrders.filter((order) =>
+    isYesterday(new Date(order.createdAt)),
+  ).length;
+  const weekCompletedCount = completedOrders.filter((order) =>
+    isThisWeek(new Date(order.createdAt)),
+  ).length;
+  const monthCompletedCount = completedOrders.filter((order) =>
+    isThisMonth(new Date(order.createdAt)),
+  ).length;
+  const yearCompletedCount = completedOrders.filter((order) =>
+    isThisYear(new Date(order.createdAt)),
+  ).length;
+
+  const filteredCompletedOrders = completedOrders.filter((order) => {
+    const createdAt = new Date(order.createdAt);
+
+    if (historyFilter === "today") return isToday(createdAt);
+    if (historyFilter === "yesterday") return isYesterday(createdAt);
+    if (historyFilter === "week") return isThisWeek(createdAt);
+    if (historyFilter === "month") return isThisMonth(createdAt);
+    if (historyFilter === "year") return isThisYear(createdAt);
+
+    // "all"
+    return true;
+  });
 
   const updateOrderStatus = async (
     orderId: string,
@@ -197,13 +273,77 @@ export default function OrdersPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="completed" className="mt-6">
+          <TabsContent value="completed" className="mt-6 space-y-4">
             {completedOrders.length > 0 ? (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {completedOrders.map((order) => (
-                  <OrderCard key={order._id} order={order} />
-                ))}
-              </div>
+              <>
+                <Tabs
+                  value={historyFilter}
+                  onValueChange={(value) =>
+                    setHistoryFilter(
+                      value as
+                        | "today"
+                        | "yesterday"
+                        | "week"
+                        | "month"
+                        | "year"
+                        | "all",
+                    )
+                  }
+                >
+                  <TabsList variant="line">
+                    <TabsTrigger value="today" className="gap-2">
+                      Today
+                      <Badge variant="secondary" className="ml-1">
+                        {todayCompletedCount}
+                      </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger value="yesterday" className="gap-2">
+                      Yesterday
+                      <Badge variant="secondary" className="ml-1">
+                        {yesterdayCompletedCount}
+                      </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger value="week" className="gap-2">
+                      Week
+                      <Badge variant="secondary" className="ml-1">
+                        {weekCompletedCount}
+                      </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger value="month" className="gap-2">
+                      Month
+                      <Badge variant="secondary" className="ml-1">
+                        {monthCompletedCount}
+                      </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger value="year" className="gap-2">
+                      Year
+                      <Badge variant="secondary" className="ml-1">
+                        {yearCompletedCount}
+                      </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger value="all" className="gap-2">
+                      All
+                      <Badge variant="outline" className="ml-1">
+                        {completedOrders.length}
+                      </Badge>
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
+                {filteredCompletedOrders.length > 0 ? (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredCompletedOrders.map((order) => (
+                      <OrderCard key={order._id} order={order} />
+                    ))}
+                  </div>
+                ) : (
+                  <Card className="p-12 text-center">
+                    <p className="text-muted-foreground">
+                      No orders for this period.
+                    </p>
+                  </Card>
+                )}
+              </>
             ) : (
               <Card className="p-12 text-center">
                 <p className="text-muted-foreground">
