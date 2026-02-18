@@ -51,11 +51,14 @@ const Register = () => {
         password,
       });
 
+      // Store email for the waiting page
+      localStorage.setItem("pendingApprovalEmail", email);
+      
       toast({
         title: "Registration successful",
         description: "Please wait for admin approval.",
       });
-      router.push("/login");
+      router.push("/waiting-approval");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast({

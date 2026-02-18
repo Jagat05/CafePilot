@@ -2,9 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import OrderSchema from "../model/OrderSchema.js";
 import TableSchema from "../model/TableSchema.js";
 import MenuSchema from "../model/MenuSchema.js";
-// import Order from "../model/OrderSchema.js";
-// import Table from "../model/TableSchema.js";
-// import MenuItem from "../model/MenuItemSchema.js";
+
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 

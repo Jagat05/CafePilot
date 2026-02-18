@@ -55,6 +55,21 @@ const Login = () => {
       if (axios.isAxiosError(error) && error.response) {
         const errorMessage =
           error.response.data?.message || "Login failed. Please try again.";
+        const statusCode = error.response.status;
+
+        // Check if account is pending approval
+        if (
+          statusCode === 403 &&
+          (errorMessage.includes("not approved") ||
+            errorMessage.includes("Account not approved"))
+        ) {
+          // Store email for the waiting page
+          localStorage.setItem("pendingApprovalEmail", email);
+          // Redirect to waiting approval page
+          router.push("/waiting-approval");
+          return;
+        }
+
         toast({
           title: "Error",
           description: errorMessage,
