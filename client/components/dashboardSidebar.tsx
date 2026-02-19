@@ -4,11 +4,9 @@ import {
   Coffee,
   UtensilsCrossed,
   ClipboardList,
-  Package,
   Users,
   LayoutDashboard,
   LogOut,
-  Table,
   Table2,
 } from "lucide-react";
 import API from "@/lib/axios";
@@ -32,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 const menuItems = [
   {
@@ -80,11 +79,17 @@ export function AppSidebar() {
   return (
     <Sidebar className="border-r-0" collapsible="icon">
       <SidebarHeader className="h-16 border-b border-sidebar-border px-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent">
-            <Coffee className="h-6 w-6 text-sidebar-primary-foreground" />
-          </div>
-          {!collapsed && (
+        <div className="flex items-center justify-center gap-3">
+          {/* <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent"> */}
+          {/* <Coffee className="h-6 w-6 text-sidebar-primary-foreground" /> */}
+          <Image
+            src="/cafepilot.jpg"
+            alt="CafePilot Logo"
+            width={50}
+            height={40}
+          />
+          {/* </div> */}
+          {/* {!collapsed && (
             <div className="flex flex-col">
               <span className="text-lg font-bold text-sidebar-foreground">
                 CafePilot
@@ -93,7 +98,7 @@ export function AppSidebar() {
                 Cafe Management
               </span>
             </div>
-          )}
+          )} */}
         </div>
       </SidebarHeader>
 
