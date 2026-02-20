@@ -65,7 +65,9 @@ const isThisMonth = (date: Date) => {
   const d = new Date(date);
   const today = new Date();
 
-  return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth();
+  return (
+    d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth()
+  );
 };
 
 const isThisYear = (date: Date) => {
@@ -175,7 +177,7 @@ export default function OrdersPage() {
 
     return (
       <Card className={`warm-shadow border-l-4 ${config.color}`}>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-1">
           <div className="flex items-start justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -189,13 +191,10 @@ export default function OrdersPage() {
                 Table {tableNumber}
               </CardDescription>
             </div>
-            <span className="text-xl font-bold text-primary">
-              NRS. {(order.totalAmount || 0).toFixed(2)}
-            </span>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="mb-4 space-y-2">
+          <div className="mb-4 space-y-1">
             {order.items && order.items.length > 0 ? (
               order.items.map((item: any, index: number) => (
                 <div key={index} className="flex justify-between text-sm">
@@ -211,6 +210,9 @@ export default function OrdersPage() {
               <p className="text-sm text-muted-foreground">No items</p>
             )}
           </div>
+          <span className="text-xl font-bold text-primary">
+            Total:- NRS. {(order.totalAmount || 0).toFixed(2)}
+          </span>
 
           <div className="flex items-center justify-between border-t pt-3">
             <span className="text-xs text-muted-foreground">

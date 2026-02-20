@@ -63,6 +63,7 @@ export default function TablesPage() {
   // AlertDialog states
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [tableToDelete, setTableToDelete] = useState<string | null>(null);
 
   const fetchTables = async () => {
@@ -238,6 +239,35 @@ export default function TablesPage() {
     setConfirmClearOpen(true);
   };
 
+  const handleCancelOrder = async () => {
+    if (!activeOrder) return;
+    setConfirmCancelOpen(true);
+  };
+
+  const confirmCancelOrderAction = async () => {
+    if (!activeOrder) return;
+
+    try {
+      await API.put(`/orders/cancel/${activeOrder._id}`);
+      fetchTables();
+      setIsCreateOrderOpen(false);
+      setSelectedTable(null);
+      setActiveOrder(null);
+      toast({
+        title: "Order Cancelled",
+        description: "The order has been cancelled and table is now available.",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.response?.data?.message || "Failed to cancel order",
+        variant: "destructive",
+      });
+    } finally {
+      setConfirmCancelOpen(false);
+    }
+  };
+
   const confirmClearTableOrder = async () => {
     if (!activeOrder) return;
 
@@ -345,16 +375,17 @@ export default function TablesPage() {
         table={
           selectedTable
             ? {
-                id: selectedTable._id,
-                number: selectedTable.tableNumber,
-                seats: selectedTable.capacity,
-                status: selectedTable.status,
-              }
+              id: selectedTable._id,
+              number: selectedTable.tableNumber,
+              seats: selectedTable.capacity,
+              status: selectedTable.status,
+            }
             : null
         }
         existingOrder={activeOrder}
         onSubmit={handleCreateOrUpdateOrder}
         onClearTable={handleClearTable}
+        onCancelOrder={handleCancelOrder}
       />
 
       {/* Delete Table Confirmation */}
@@ -393,6 +424,28 @@ export default function TablesPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmClearTableOrder}>
               Clear Table
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancel Order Confirmation */}
+      <AlertDialog open={confirmCancelOpen} onOpenChange={setConfirmCancelOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Order?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this order? This action cannot be
+              undone and the table will be freed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>No, Keep it</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmCancelOrderAction}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Yes, Cancel Order
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

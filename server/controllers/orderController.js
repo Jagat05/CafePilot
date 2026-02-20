@@ -65,6 +65,31 @@ export const updateOrder = async (req, res) => {
   }
 };
 
+export const cancelOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await Order.findOneAndUpdate(
+      { _id: id, owner: req.user._id, status: "active" },
+      { status: "cancelled" },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Update table status to available
+    await Table.findByIdAndUpdate(order.table, {
+      status: "available",
+    });
+
+    res.json({ success: true, order, message: "Order cancelled successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to cancel order" });
+  }
+};
+
 export const completeOrder = async (req, res) => {
   try {
     const { id } = req.params;

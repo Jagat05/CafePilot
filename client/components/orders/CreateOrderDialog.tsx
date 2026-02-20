@@ -44,6 +44,7 @@ interface CreateOrderDialogProps {
     }[];
   }) => void;
   onClearTable?: () => void;
+  onCancelOrder?: () => void;
 }
 
 export function CreateOrderDialog({
@@ -53,6 +54,7 @@ export function CreateOrderDialog({
   existingOrder,
   onSubmit,
   onClearTable,
+  onCancelOrder,
 }: CreateOrderDialogProps) {
   const [menuItems, setMenuItems] = useState<MenuItem[]>(mockMenuItems);
   const [items, setItems] = useState<
@@ -247,7 +249,7 @@ export function CreateOrderDialog({
 
         <DialogFooter>
           <div className="flex justify-between w-full">
-            <div>
+            <div className="flex gap-2">
               {existingOrder && onClearTable && (
                 <Button
                   variant="outline"
@@ -255,6 +257,15 @@ export function CreateOrderDialog({
                   className="border-green-500 text-green-600 hover:bg-green-50"
                 >
                   Clear Table
+                </Button>
+              )}
+              {existingOrder && onCancelOrder && (
+                <Button
+                  variant="outline"
+                  onClick={onCancelOrder}
+                  className="border-destructive text-destructive hover:bg-destructive/10"
+                >
+                  Cancel Order
                 </Button>
               )}
             </div>
