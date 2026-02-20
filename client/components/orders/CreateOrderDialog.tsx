@@ -159,7 +159,7 @@ export function CreateOrderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-md w-[95vw] max-h-[95vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>
             {existingOrder ? "Edit Order" : "New Order"} - Table {table.number}
@@ -193,7 +193,7 @@ export function CreateOrderDialog({
             </div>
           </div>
 
-          <div className="space-y-2 border rounded-md p-2 max-h-[200px] overflow-y-auto">
+          <div className="space-y-2 border rounded-md p-2 max-h-[30vh] sm:max-h-[200px] overflow-y-auto">
             {items.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
                 No items added yet
@@ -206,28 +206,32 @@ export function CreateOrderDialog({
                 return (
                   <div
                     key={idx}
-                    className="flex items-center justify-between text-sm"
+                    className="flex items-center justify-between text-sm py-1 border-b last:border-0"
                   >
-                    <div className="flex-1">
-                      <p className="font-medium">{menuItem?.name}</p>
-                      <p className="text-muted-foreground">
+                    <div className="flex-1 pr-2">
+                      <p className="font-medium line-clamp-1">
+                        {menuItem?.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
                         NRS. {menuItem?.price.toFixed(2)} x {item.quantity}
                       </p>
                     </div>
                     <div className="flex items-center gap-1">
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="icon"
-                        className="h-6 w-6"
+                        className="h-7 w-7 sm:h-6 sm:w-6"
                         onClick={() => updateQuantity(idx, -1)}
                       >
                         <Minus className="h-3 w-3" />
                       </Button>
-                      <span className="w-4 text-center">{item.quantity}</span>
+                      <span className="w-6 text-center text-xs font-semibold">
+                        {item.quantity}
+                      </span>
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="icon"
-                        className="h-6 w-6"
+                        className="h-7 w-7 sm:h-6 sm:w-6"
                         onClick={() => updateQuantity(idx, 1)}
                       >
                         <Plus className="h-3 w-3" />
@@ -247,33 +251,58 @@ export function CreateOrderDialog({
           </div>
         </div>
 
-        <DialogFooter>
-          <div className="flex justify-between w-full">
-            <div className="flex gap-2">
-              {existingOrder && onClearTable && (
-                <Button
-                  variant="outline"
-                  onClick={onClearTable}
-                  className="border-green-500 text-green-600 hover:bg-green-50"
-                >
-                  Clear Table
-                </Button>
-              )}
+        <DialogFooter className="sm:justify-between">
+          <div className="flex flex-col sm:flex-row justify-between w-full gap-4 pt-2">
+            <div className="flex flex-row gap-2 justify-center sm:justify-start">
               {existingOrder && onCancelOrder && (
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={onCancelOrder}
-                  className="border-destructive text-destructive hover:bg-destructive/10"
+                  className="border-destructive text-destructive hover:bg-destructive/10 text-xs sm:text-sm"
                 >
                   Cancel Order
                 </Button>
               )}
+              {existingOrder && onClearTable && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onClearTable}
+                  className="border-green-500 text-green-600 hover:bg-green-50 text-xs sm:text-sm"
+                >
+                  Clear Table
+                </Button>
+              )}
+
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <div className="flex flex-row gap-2 justify-center sm:justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onOpenChange(false)}
+                className="text-xs sm:text-sm flex-1 sm:flex-none"
+              >
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} disabled={items.length === 0}>
+              <Button
+                onClick={handleSubmit}
+                size="sm"
+                disabled={(() => {
+                  if (items.length === 0) return true;
+                  if (!existingOrder) return false;
+                  return (
+                    items.length === existingOrder.items.length &&
+                    items.every((item) => {
+                      const originalItem = existingOrder.items.find(
+                        (oi) => oi.menuItem === item.menuItemId,
+                      );
+                      return originalItem && originalItem.quantity === item.quantity;
+                    })
+                  );
+                })()}
+                className="text-xs sm:text-sm flex-1 sm:flex-none"
+              >
                 {existingOrder ? "Update Order" : "Create Order"}
               </Button>
             </div>
