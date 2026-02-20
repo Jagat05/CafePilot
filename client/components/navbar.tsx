@@ -1,9 +1,10 @@
 "use client";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Coffee, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 import { useBanner } from "@/contexts/BannerContext";
 
@@ -25,8 +26,9 @@ const Navbar = () => {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className={`fixed left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border transition-all duration-300 ${hasBanner ? "top-10" : "top-0"
-          }`}
+        className={`fixed left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border transition-all duration-300 ${
+          hasBanner ? "top-10" : "top-0"
+        }`}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
@@ -36,12 +38,19 @@ const Navbar = () => {
               className="flex items-center gap-2"
               whileHover={{ scale: 1.02 }}
             >
-              <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shadow-soft">
-                <Coffee className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="font-display text-xl font-bold text-foreground">
+              {/* <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shadow-soft"> */}
+              <Image
+                src="/cafePilot.jpg"
+                alt="CafePilot Logo"
+                width={70}
+                height={40}
+                className="object-contain"
+                priority
+              />
+              {/* </div> */}
+              {/* <span className="font-display text-xl font-bold text-foreground">
                 CafePilot
-              </span>
+              </span> */}
             </motion.a>
 
             {/* Desktop Navigation */}
@@ -80,7 +89,10 @@ const Navbar = () => {
             </div>
 
             {/* Mobile Menu Button */}
-            <button className="lg:hidden p-2" onClick={() => setIsOpen(!isOpen)}>
+            <button
+              className="lg:hidden p-2"
+              onClick={() => setIsOpen(!isOpen)}
+            >
               {isOpen ? (
                 <X className="w-6 h-6 text-foreground" />
               ) : (

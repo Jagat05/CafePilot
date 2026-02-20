@@ -2,12 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Coffee, Eye, EyeOff } from "lucide-center"; // Fixed icon library mismatch if any, using lucide-react in other files
-import {
-  Coffee as CoffeeIcon,
-  Eye as EyeIcon,
-  EyeOff as EyeOffIcon,
-} from "lucide-react";
+import { Eye as EyeIcon, EyeOff as EyeOffIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +18,7 @@ import API from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
+import Image from "next/image";
 
 const Login = () => {
   const { toast } = useToast();
@@ -102,9 +98,16 @@ const Login = () => {
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="mx-auto w-16 h-16 rounded-2xl bg-gradient-warm flex items-center justify-center shadow-glow"
+              className="mx-auto  rounded-2xl bg-gradient-warm flex items-center justify-center shadow-glow"
             >
-              <CoffeeIcon className="w-8 h-8 text-primary-foreground" />
+              <Image
+                src="/cafePilot.jpg"
+                alt="CafePilot Logo"
+                width={90}
+                height={90}
+                className="object-contain"
+                priority
+              />
             </motion.div>
             <div>
               <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>

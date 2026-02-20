@@ -1,6 +1,5 @@
 "use client";
 import {
-  Coffee,
   UtensilsCrossed,
   ClipboardList,
   Package,
@@ -33,6 +32,7 @@ import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import React from "react";
 import API from "@/lib/axios";
+import Image from "next/image";
 
 const AdminItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
@@ -75,12 +75,21 @@ export function AdminSidebar() {
 
   return (
     <Sidebar className="border-r-0" collapsible="icon">
-      <SidebarHeader className="h-16 border-b border-sidebar-border px-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent">
-            <Coffee className="h-6 w-6 text-sidebar-primary-foreground" />
+      <SidebarHeader className="h-16  border-b border-sidebar-border px-4">
+        <div className="flex items-center justify-center gap-3">
+          {/* <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent"> */}
+          <div>
+            <Image
+              src="/cafePilot.jpg"
+              alt="CafePilot Logo"
+              width={50}
+              height={50}
+              className="object-contain"
+              priority
+            />
           </div>
-          {!collapsed && (
+          {/* </div> */}
+          {/* {!collapsed && (
             <div className="flex flex-col">
               <span className="text-lg font-bold text-sidebar-foreground">
                 CafePilot
@@ -89,7 +98,7 @@ export function AdminSidebar() {
                 Cafe Management
               </span>
             </div>
-          )}
+          )} */}
         </div>
       </SidebarHeader>
 

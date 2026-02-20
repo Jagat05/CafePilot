@@ -1,7 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Coffee, Users } from "lucide-react";
+import { ArrowRight, Users } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
@@ -25,18 +25,6 @@ const HeroSection = () => {
             transition={{ duration: 0.7 }}
             className="text-center lg:text-left"
           >
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 bg-secondary rounded-full px-4 py-2 mb-6"
-            >
-              <span className="flex h-2 w-2 rounded-full bg-accent animate-pulse-glow" />
-              <span className="text-sm font-medium text-secondary-foreground">
-                Trust Us ! We will make Your Management easier and cooler..
-              </span>
-            </motion.div>
 
             {/* Headline */}
             <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6">
@@ -103,12 +91,19 @@ const HeroSection = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 }}
-                className="absolute -top-12 -left-12 bg-card rounded-xl shadow-card p-4 border border-border animate-float"
+                className="absolute -top-12 -left-12 bg-card rounded-xl shadow-card px-4 py-3 border border-border animate-float"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-                    <Coffee className="w-5 h-5 text-accent" />
-                  </div>
+                  {/* <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center"> */}
+                  <Image
+                    src="/cafePilot.jpg"
+                    alt="CafePilot Logo"
+                    width={35}
+                    height={30}
+                    className="object-contain"
+                    priority
+                  />
+                  {/* </div> */}
                   <div>
                     <p className="text-sm font-medium text-foreground">
                       CafePilot

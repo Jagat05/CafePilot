@@ -83,7 +83,7 @@ export function AppSidebar() {
           {/* <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent"> */}
           {/* <Coffee className="h-6 w-6 text-sidebar-primary-foreground" /> */}
           <Image
-            src="/cafepilot.jpg"
+            src="/cafePilot.jpg"
             alt="CafePilot Logo"
             width={50}
             height={40}
