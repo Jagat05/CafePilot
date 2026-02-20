@@ -78,27 +78,26 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r-0" collapsible="icon">
-      <SidebarHeader className="h-16 border-b border-sidebar-border px-4">
-        <div className="flex items-center justify-center gap-3">
-          {/* <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent"> */}
-          {/* <Coffee className="h-6 w-6 text-sidebar-primary-foreground" /> */}
+      <SidebarHeader className="h-16 border-b border-sidebar-border">
+        <div className="flex items-center justify-center  gap-3 pt-1">
           <Image
             src="/cafePilot.jpg"
             alt="CafePilot Logo"
-            width={50}
+            width={40}
             height={40}
+            className="object-contain"
+            priority
           />
-          {/* </div> */}
-          {/* {!collapsed && (
+          {!collapsed && (
             <div className="flex flex-col">
-              <span className="text-lg font-bold text-sidebar-foreground">
+              <span className="text-base font-bold text-sidebar-foreground leading-tight">
                 CafePilot
               </span>
-              <span className="text-xs text-sidebar-foreground/60">
-                Cafe Management
+              <span className="text-[10px] text-sidebar-foreground/60 leading-tight truncate max-w-[100px]">
+                Manage Smoothly
               </span>
             </div>
-          )} */}
+          )}
         </div>
       </SidebarHeader>
 
@@ -114,13 +113,15 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     tooltip={item.title}
                     onClick={() => router.push(item.url)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors
+                    className={`flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors
         hover:bg-amber-500
         ${pathname === item.url ? "bg-accent text-sidebar-primary font-medium" : "text-sidebar-foreground"}
       `}
                   >
-                    <item.icon className="h-5 w-5 shrink-0" />
-                    {!collapsed && <span>{item.title}</span>}
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    {!collapsed && (
+                      <span className="text-sm">{item.title}</span>
+                    )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -129,20 +130,20 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-sm">
+      <SidebarFooter className="border-t border-sidebar-border p-3">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-xs">
               {user ? user.name.charAt(0).toUpperCase() : "CP"}
             </AvatarFallback>
           </Avatar>
 
           {!collapsed && (
             <div className="flex flex-1 flex-col overflow-hidden">
-              <span className="truncate text-sm font-medium text-sidebar-foreground">
+              <span className="truncate text-xs font-medium text-sidebar-foreground">
                 {user ? user.name : "Loading..."}
               </span>
-              <span className="truncate text-xs capitalize text-sidebar-foreground/60">
+              <span className="truncate text-[10px] capitalize text-sidebar-foreground/60">
                 {user ? user.role : "Guest"}
               </span>
             </div>
@@ -152,9 +153,9 @@ export function AppSidebar() {
             variant="ghost"
             size="icon"
             onClick={handleLogout}
-            className="shrink-0 text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            className="h-7 w-7 shrink-0 text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-3.5 w-3.5" />
           </Button>
         </div>
       </SidebarFooter>
