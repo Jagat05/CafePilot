@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Save, AlertTriangle, Bell, Lock, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getApiUrl } from "@/lib/api-config";
 
 export default function GlobalSettings() {
   const { toast } = useToast();
@@ -29,7 +30,7 @@ export default function GlobalSettings() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/admin/settings", {
+      const res = await fetch(getApiUrl("/admin/settings"), {
         credentials: "include",
       });
       const data = await res.json();
@@ -52,7 +53,7 @@ export default function GlobalSettings() {
   const handleUpdate = async (updates: { announcement?: string; maintenanceMode?: boolean }) => {
     setIsSaving(true);
     try {
-      const res = await fetch("http://localhost:8080/api/admin/settings", {
+      const res = await fetch(getApiUrl("/admin/settings"), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

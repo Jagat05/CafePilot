@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { io } from "socket.io-client";
 import { usePathname } from "next/navigation";
+import { getApiBaseUrl, getApiUrl } from "@/lib/api-config";
 
 interface BannerContextType {
     announcement: string;
@@ -20,11 +21,11 @@ export const BannerProvider = ({ children }: { children: ReactNode }) => {
     const pathname = usePathname();
 
     useEffect(() => {
-        const socket = io("http://localhost:8080", { withCredentials: true });
+        const socket = io(getApiBaseUrl(), { withCredentials: true });
 
         const fetchSettings = async () => {
             try {
-                const res = await fetch("http://localhost:8080/api/admin/settings", {
+                const res = await fetch(getApiUrl("/admin/settings"), {
                     credentials: "include",
                 });
                 const data = await res.json();
