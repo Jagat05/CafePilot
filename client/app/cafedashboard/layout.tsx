@@ -12,6 +12,7 @@ import { ReactNode } from "react";
 import { useBanner } from "@/contexts/BannerContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { SubscriptionShield } from "@/components/SubscriptionShield";
+import { SubscriptionAlert } from "@/components/SubscriptionAlert";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -26,6 +27,7 @@ export default function DashboardLayout({
 
   return (
     <SubscriptionProvider>
+      <SubscriptionAlert />
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <AppSidebar />
