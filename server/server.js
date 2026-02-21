@@ -12,6 +12,7 @@ import staffRouter from "./routes/staffRoutes.js";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import aiRoutes from "./routes/aiRoutes.js";
+import planRouter from "./routes/planRoutes.js";
 
 const app = express();
 const server = createServer(app);
@@ -71,6 +72,7 @@ app.use("/api/orders", orderRouter);
 app.use("/api/menu", menuRouter);
 app.use("/api/staff", staffRouter);
 app.use("/api/ai", aiRoutes);
+app.use("/api/plans", planRouter);
 
 app.get("/", (req, res) => {
   res.send("Cafe Pilot API running ☕");

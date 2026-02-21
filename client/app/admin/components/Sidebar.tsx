@@ -79,7 +79,7 @@ export function AdminSidebar() {
         <div className="flex items-center justify-center  gap-3 pt-1">
           <div>
             <Image
-              src="/cafePilot.jpg"
+              src="/cafepilot.png"
               alt="CafePilot Logo"
               width={40}
               height={40}

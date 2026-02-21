@@ -101,7 +101,7 @@ const Login = () => {
               className="mx-auto  rounded-2xl bg-gradient-warm flex items-center justify-center shadow-glow"
             >
               <Image
-                src="/cafePilot.jpg"
+                src="/cafepilot.png"
                 alt="CafePilot Logo"
                 width={90}
                 height={90}

@@ -81,7 +81,7 @@ export function AppSidebar() {
       <SidebarHeader className="h-16 border-b border-sidebar-border">
         <div className="flex items-center justify-center  gap-3 pt-1">
           <Image
-            src="/cafePilot.jpg"
+            src="/cafepilot.png"
             alt="CafePilot Logo"
             width={40}
             height={40}

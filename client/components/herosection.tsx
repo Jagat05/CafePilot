@@ -96,7 +96,7 @@ const HeroSection = () => {
                 <div className="flex items-center gap-3">
                   {/* <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center"> */}
                   <Image
-                    src="/cafePilot.jpg"
+                    src="/cafepilot.png"
                     alt="CafePilot Logo"
                     width={35}
                     height={30}

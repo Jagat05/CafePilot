@@ -1,5 +1,7 @@
 "use client";
-import React from "react";
+import { useEffect, useState } from "react";
+import axiosInstance from "@/lib/axios";
+import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -20,29 +22,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const plans = [
-  {
-    name: "Basic",
-    price: "$29",
-    description: "Essential features for small cafes",
-    features: ["Up to 5 Staff", "Basic Reporting", "Email Support"],
-    popular: false,
-  },
-  {
-    name: "Pro",
-    price: "$59",
-    description: "Advanced tools for growing businesses",
-    features: ["Unlimited Staff", "Advanced Analytics", "Priority Support", "Inventory Management"],
-    popular: true,
-  },
-  {
-    name: "Enterprise",
-    price: "$199",
-    description: "Custom solutions for chains",
-    features: ["Dedicated Account Manager", "Custom API Access", "SLA", "Multi-location Support"],
-    popular: false,
-  },
-];
+import { EditPlanDialog } from "./components/EditPlanDialog";
+
+interface Plan {
+  _id: string;
+  name: string;
+  price: string;
+  description: string;
+  features: string[];
+  popular: boolean;
+}
 
 const invoices = [
   {
@@ -76,10 +65,52 @@ const invoices = [
 ];
 
 export default function Billings() {
+  const { toast } = useToast();
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const fetchPlans = async () => {
+    try {
+      const response = await axiosInstance.get("/plans");
+      if (response.data.success) {
+        setPlans(response.data.plans);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch subscription plans",
+        variant: "destructive",
+      });
+      console.error("Fetch plans error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPlans();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
+      </div>
+    );
+  }
+
+  const handleEditClick = (plan: Plan) => {
+    setSelectedPlan(plan);
+    setIsEditDialogOpen(true);
+  };
   return (
     <div className="flex flex-col gap-8 p-6 min-h-screen bg-muted/10">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Billings & Subscriptions</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Billings & Subscriptions
+        </h1>
         <p className="text-muted-foreground">
           Manage subscription plans and view revenue history.
         </p>
@@ -90,7 +121,10 @@ export default function Billings() {
         <h2 className="text-xl font-semibold mb-4">Subscription Plans</h2>
         <div className="grid gap-6 md:grid-cols-3">
           {plans.map((plan) => (
-            <Card key={plan.name} className={`flex flex-col ${plan.popular ? 'border-amber-500 shadow-md relative' : ''}`}>
+            <Card
+              key={plan._id}
+              className={`flex flex-col ${plan.popular ? "border-amber-500 shadow-md relative" : ""}`}
+            >
               {plan.popular && (
                 <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-amber-500 hover:bg-amber-600">
                   Most Popular
@@ -101,9 +135,7 @@ export default function Billings() {
                 <CardDescription>{plan.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-1">
-                <div className="text-4xl font-bold mb-4">
-                  {plan.price}<span className="text-sm font-normal text-muted-foreground">/mo</span>
-                </div>
+                <div className="text-4xl font-bold mb-4">{plan.price}</div>
                 <ul className="space-y-2 text-sm">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-center">
@@ -114,7 +146,11 @@ export default function Billings() {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button className="w-full" variant={plan.popular ? "default" : "outline"}>
+                <Button
+                  className="w-full"
+                  variant={plan.popular ? "default" : "outline"}
+                  onClick={() => handleEditClick(plan)}
+                >
                   Edit Plan
                 </Button>
               </CardFooter>
@@ -147,15 +183,32 @@ export default function Billings() {
               <TableBody>
                 {invoices.map((invoice) => (
                   <TableRow key={invoice.invoice}>
-                    <TableCell className="font-medium">{invoice.invoice}</TableCell>
+                    <TableCell className="font-medium">
+                      {invoice.invoice}
+                    </TableCell>
                     <TableCell>
-                      {invoice.status === "Paid" && <Badge className="bg-emerald-500 hover:bg-emerald-600">Paid</Badge>}
-                      {invoice.status === "Pending" && <Badge variant="secondary" className="bg-amber-100 text-amber-700">Pending</Badge>}
-                      {invoice.status === "Failed" && <Badge variant="destructive">Failed</Badge>}
+                      {invoice.status === "Paid" && (
+                        <Badge className="bg-emerald-500 hover:bg-emerald-600">
+                          Paid
+                        </Badge>
+                      )}
+                      {invoice.status === "Pending" && (
+                        <Badge
+                          variant="secondary"
+                          className="bg-amber-100 text-amber-700"
+                        >
+                          Pending
+                        </Badge>
+                      )}
+                      {invoice.status === "Failed" && (
+                        <Badge variant="destructive">Failed</Badge>
+                      )}
                     </TableCell>
                     <TableCell>{invoice.method}</TableCell>
                     <TableCell>{invoice.date}</TableCell>
-                    <TableCell className="text-right">{invoice.total}</TableCell>
+                    <TableCell className="text-right">
+                      {invoice.total}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -163,6 +216,13 @@ export default function Billings() {
           </CardContent>
         </Card>
       </section>
+
+      <EditPlanDialog
+        plan={selectedPlan}
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        onSuccess={fetchPlans}
+      />
     </div>
   );
 }
