@@ -66,7 +66,7 @@ export function CreateCafeDialog({ onCafeCreated }: CreateCafeDialogProps) {
           variant: "destructive",
         });
       }
-      console.error("Create Cafe Error:", error);
+      // console.error("Create Cafe Error:", error);
     } finally {
       setIsLoading(false);
     }

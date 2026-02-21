@@ -115,7 +115,7 @@ export default function MenuPage() {
         );
       }
     } catch (err) {
-      console.error("Failed to fetch menu items", err);
+      // console.error("Failed to fetch menu items", err);
       toast({
         title: "Error",
         description: "Failed to fetch menu items",

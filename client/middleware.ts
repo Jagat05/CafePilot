@@ -21,17 +21,17 @@ export function middleware(request: NextRequest) {
   const role = parsedUser.role;
   const pathname = request.nextUrl.pathname;
 
-  console.log(`Middleware Path: ${pathname}, Role: ${role}`);
+
 
   // Admin protection
   if (pathname.startsWith("/admin") && role !== "admin") {
-    console.log("Redirecting non-admin from /admin to /");
+
     return NextResponse.redirect(new URL("/", request.url));
   }
 
   // Cafe/Owner protection
   if (pathname.startsWith("/cafedashboard") && role !== "owner") {
-    console.log("Redirecting non-owner from /cafedashboard to /");
+
     return NextResponse.redirect(new URL("/", request.url));
   }
 

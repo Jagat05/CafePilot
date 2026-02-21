@@ -39,7 +39,7 @@ export default function GlobalSettings() {
         setMaintenanceMode(data.settings.maintenanceMode || false);
       }
     } catch (error) {
-      console.error("Error fetching settings:", error);
+      // console.error("Error fetching settings:", error);
       toast({
         title: "Error",
         description: "Failed to load platform settings.",

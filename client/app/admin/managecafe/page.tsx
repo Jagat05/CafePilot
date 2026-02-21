@@ -41,7 +41,7 @@ export default function ManageCafe() {
       setApprovedCafes(approvedRes.data.owners);
       setPendingCafes(pendingRes.data.owners);
     } catch (error) {
-      console.error("Error fetching cafes:", error);
+      // console.error("Error fetching cafes:", error);
       toast({
         title: "Error",
         description: "Failed to fetch cafes",

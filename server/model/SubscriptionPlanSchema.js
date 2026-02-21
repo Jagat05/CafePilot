@@ -24,6 +24,11 @@ const subscriptionPlanSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        durationInDays: {
+            type: Number,
+            required: true,
+            default: 30,
+        },
         status: {
             type: String,
             enum: ["active", "hidden"],

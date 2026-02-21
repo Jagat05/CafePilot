@@ -129,7 +129,7 @@ export default function StaffPage() {
         setStaff(data.staff.map(mapApiStaffToMember));
       }
     } catch (err) {
-      console.error("Failed to fetch staff", err);
+      // console.error("Failed to fetch staff", err);
       toast({
         title: "Error",
         description: "Failed to load staff",
@@ -436,113 +436,113 @@ export default function StaffPage() {
                 <p className="text-muted-foreground">Loading staff...</p>
               </div>
             ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Staff Member</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Hire Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStaff.map((member) => (
-                  <TableRow key={member.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarFallback className="bg-primary/10 text-primary">
-                            {member.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{member.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {member.email}
-                          </p>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Staff Member</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Hire Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredStaff.map((member) => (
+                    <TableRow key={member.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarFallback className="bg-primary/10 text-primary">
+                              {member.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{member.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {member.email}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className={`gap-1 capitalize ${roleColors[member.role]}`}
-                        >
-                          {roleIcons[member.role]}
-                          {member.role}
-                        </Badge>
-                        {member.isOwner && (
-                          <Badge variant="secondary" className="text-xs">
-                            You
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant="outline"
+                            className={`gap-1 capitalize ${roleColors[member.role]}`}
+                          >
+                            {roleIcons[member.role]}
+                            {member.role}
                           </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {member.phone || "—"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {member.isOwner ? (
-                          <span className="text-sm capitalize text-muted-foreground">
-                            {member.status}
-                          </span>
-                        ) : (
-                          <>
-                            <Switch
-                              checked={member.status === "active"}
-                              onCheckedChange={() => toggleStatus(member.id)}
-                            />
-                            <span className="text-sm capitalize">
+                          {member.isOwner && (
+                            <Badge variant="secondary" className="text-xs">
+                              You
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {member.phone || "—"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {member.isOwner ? (
+                            <span className="text-sm capitalize text-muted-foreground">
                               {member.status}
                             </span>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(member.hireDate).toLocaleDateString("en-US", {
+                          ) : (
+                            <>
+                              <Switch
+                                checked={member.status === "active"}
+                                onCheckedChange={() => toggleStatus(member.id)}
+                              />
+                              <span className="text-sm capitalize">
+                                {member.status}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(member.hireDate).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
                           year: "numeric",
                         })}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        {member.isOwner ? (
-                          <span className="text-xs text-muted-foreground">
-                            Logged-in owner
-                          </span>
-                        ) : (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleOpenDialog(member)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteClick(member)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          {member.isOwner ? (
+                            <span className="text-xs text-muted-foreground">
+                              Logged-in owner
+                            </span>
+                          ) : (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleOpenDialog(member)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteClick(member)}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             )}
           </CardContent>
         </Card>

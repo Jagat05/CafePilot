@@ -56,7 +56,7 @@ export default function AIAssistant() {
         { role: "assistant", text: res.data.reply },
       ]);
     } catch (err: any) {
-      console.error("AI Error:", err);
+      // console.error("AI Error:", err);
       let errorMsg = err.response?.data?.message || "Something went wrong. Try again later.";
       if (err.response?.status === 429) {
         errorMsg = "I'm taking a short break (Quota reached). Try in 1 minute.";

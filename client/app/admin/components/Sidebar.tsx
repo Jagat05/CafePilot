@@ -32,6 +32,7 @@ import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import React from "react";
 import API from "@/lib/axios";
+import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 
 const AdminItems = [
@@ -43,6 +44,7 @@ const AdminItems = [
 ];
 
 export function AdminSidebar() {
+  const { toast } = useToast();
   const { state } = useSidebar();
   const [user, setUser] = React.useState<{ name: string; role: string } | null>(
     null,
@@ -58,7 +60,12 @@ export function AdminSidebar() {
           setUser(data.user);
         }
       } catch (error) {
-        console.error("Failed to fetch user profile", error);
+        // console.error("Failed to fetch user profile", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch user profile",
+          variant: "destructive",
+        });
       }
     };
     fetchUser();
@@ -70,7 +77,12 @@ export function AdminSidebar() {
       await API.post("/users/logout");
       router.replace("/login");
     } catch (err) {
-      console.error("Logout failed", err);
+      // console.error("Logout failed", err);
+      toast({
+        title: "Error",
+        description: "Logout failed",
+        variant: "destructive",
+      });
     }
   };
 

@@ -94,7 +94,7 @@ export default function OrdersPage() {
         setOrders(data.orders);
       }
     } catch (err) {
-      console.error("Failed to fetch orders", err);
+      // console.error("Failed to fetch orders", err);
       toast({
         title: "Error",
         description: "Failed to fetch orders. Please try again.",
@@ -283,12 +283,12 @@ export default function OrdersPage() {
                   onValueChange={(value) =>
                     setHistoryFilter(
                       value as
-                        | "today"
-                        | "yesterday"
-                        | "week"
-                        | "month"
-                        | "year"
-                        | "all",
+                      | "today"
+                      | "yesterday"
+                      | "week"
+                      | "month"
+                      | "year"
+                      | "all",
                     )
                   }
                 >

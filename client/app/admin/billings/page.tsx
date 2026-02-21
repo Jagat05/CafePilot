@@ -83,7 +83,7 @@ export default function Billings() {
         description: "Failed to fetch subscription plans",
         variant: "destructive",
       });
-      console.error("Fetch plans error:", error);
+      // console.error("Fetch plans error:", error);
     } finally {
       setLoading(false);
     }

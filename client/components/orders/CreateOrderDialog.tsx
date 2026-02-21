@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, Minus } from "lucide-react";
 import { mockMenuItems } from "@/data/mockData";
 import API from "@/lib/axios";
+import { useToast } from "@/hooks/use-toast";
 
 interface Order {
   _id: string;
@@ -56,6 +57,7 @@ export function CreateOrderDialog({
   onClearTable,
   onCancelOrder,
 }: CreateOrderDialogProps) {
+  const { toast } = useToast();
   const [menuItems, setMenuItems] = useState<MenuItem[]>(mockMenuItems);
   const [items, setItems] = useState<
     { menuItemId: string; quantity: number }[]
@@ -113,7 +115,11 @@ export function CreateOrderDialog({
           );
         }
       } catch (err) {
-        console.error("Failed to fetch menu items, using mock data", err);
+        // console.error("Failed to fetch menu items, using mock data", err);
+        toast({
+          title: "Notice",
+          description: "Using offline menu data",
+        });
       }
     };
 

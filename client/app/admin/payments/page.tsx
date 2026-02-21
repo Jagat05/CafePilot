@@ -65,7 +65,7 @@ export default function AdminPaymentsPage() {
                 setPayments(res.data.payments);
             }
         } catch (error) {
-            console.error("Fetch payments error:", error);
+            // console.error("Fetch payments error:", error);
             toast({
                 title: "Error",
                 description: "Failed to fetch pending payments",
@@ -109,7 +109,7 @@ export default function AdminPaymentsPage() {
                 fetchPendingPayments();
             }
         } catch (error) {
-            console.error("Update status error:", error);
+            // console.error("Update status error:", error);
             toast({
                 title: "Error",
                 description: "Failed to update payment status.",

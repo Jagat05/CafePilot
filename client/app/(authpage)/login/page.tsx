@@ -78,7 +78,7 @@ const Login = () => {
           variant: "destructive",
         });
       }
-      console.error("Login Error:", error);
+      // console.error("Login Error:", error);
     } finally {
       setIsLoading(false);
     }

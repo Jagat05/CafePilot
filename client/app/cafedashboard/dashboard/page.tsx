@@ -76,7 +76,7 @@ export default function Dashboard() {
           );
         if (tablesRes.data?.tables) setTables(tablesRes.data.tables);
       } catch (err) {
-        console.error("Dashboard fetch failed", err);
+        // console.error("Dashboard fetch failed", err);
         toast({
           title: "Error",
           description: "Failed to load dashboard data",
@@ -229,7 +229,7 @@ export default function Dashboard() {
                   recentOrders.map((order) => {
                     const tableNum =
                       typeof order.table === "object" &&
-                      order.table?.tableNumber != null
+                        order.table?.tableNumber != null
                         ? order.table.tableNumber
                         : "—";
                     const itemCount =
@@ -288,11 +288,10 @@ export default function Dashboard() {
                     {tables.map((table) => (
                       <div
                         key={table._id}
-                        className={`flex items-center justify-between rounded-lg border p-3 ${
-                          table.status === "occupied"
+                        className={`flex items-center justify-between rounded-lg border p-3 ${table.status === "occupied"
                             ? "border-warning/30 bg-warning/5"
                             : "border-success/30 bg-success/5"
-                        }`}
+                          }`}
                       >
                         <div>
                           <p className="text-sm font-medium">
@@ -324,7 +323,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-         <AIAssistant/>
+          <AIAssistant />
         </div>
       </div>
     </div>

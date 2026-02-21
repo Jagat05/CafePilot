@@ -81,7 +81,7 @@ export function EditPlanDialog({ plan, isOpen, onClose, onSuccess }: EditPlanDia
                 description: "Failed to update plan",
                 variant: "destructive",
             });
-            console.error("Update plan error:", error);
+            // console.error("Update plan error:", error);
         } finally {
             setLoading(false);
         }

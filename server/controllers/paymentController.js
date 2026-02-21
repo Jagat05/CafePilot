@@ -1,5 +1,6 @@
 import Payment from "../model/PaymentSchema.js";
 import Subscription from "../model/SubscriptionSchema.js";
+import SubscriptionPlan from "../model/SubscriptionPlanSchema.js";
 
 /* =====================
    SUBMIT PAYMENT
@@ -66,15 +67,31 @@ export const updatePaymentStatus = async (req, res) => {
         await payment.save();
 
         if (status === "approved") {
-            // Create or Update Subscription
-            const expiryDate = new Date();
-            expiryDate.setDate(expiryDate.getDate() + 30); // 30 days subscription
+            // Find the plan to get duration
+            const plan = await SubscriptionPlan.findOne({ name: payment.planName });
+            const durationDays = plan ? plan.durationInDays : 30; // default to 30 if plan not found
+
+            // Check for existing subscription
+            const existingSub = await Subscription.findOne({ user: payment.user });
+
+            let startDate = new Date();
+            let expiryDate = new Date();
+
+            if (existingSub && existingSub.status === "active" && new Date(existingSub.expiryDate) > new Date()) {
+                // If already active and not expired, start from current expiry
+                startDate = new Date(existingSub.startDate); // keep original start if extending? Or update to now? User usually expects "added to remaining"
+                expiryDate = new Date(existingSub.expiryDate);
+                expiryDate.setDate(expiryDate.getDate() + durationDays);
+            } else {
+                // If no sub or expired, start from now
+                expiryDate.setDate(expiryDate.getDate() + durationDays);
+            }
 
             await Subscription.findOneAndUpdate(
                 { user: payment.user },
                 {
                     planName: payment.planName,
-                    startDate: new Date(),
+                    startDate: startDate,
                     expiryDate: expiryDate,
                     status: "active",
                 },
@@ -99,8 +116,16 @@ export const updatePaymentStatus = async (req, res) => {
 export const getBillingStatus = async (req, res) => {
     try {
         const userId = req.user._id;
-        const subscription = await Subscription.findOne({ user: userId });
+        let subscription = await Subscription.findOne({ user: userId });
         const latestPayment = await Payment.findOne({ user: userId }).sort({ createdAt: -1 });
+
+        // Proactively check for expiration
+        if (subscription && subscription.status === "active") {
+            if (new Date() > new Date(subscription.expiryDate)) {
+                subscription.status = "expired";
+                await subscription.save();
+            }
+        }
 
         res.json({
             success: true,

@@ -71,7 +71,11 @@ export default function TablesPage() {
       const { data } = await API.get("/tables/table");
       setTables(data.tables);
     } catch (err) {
-      console.error("Failed to fetch tables", err);
+      toast({
+        title: "Error",
+        description: "Failed to fetch tables",
+        variant: "destructive",
+      });
     }
   };
 
@@ -121,7 +125,7 @@ export default function TablesPage() {
 
       setIsCreateOrderOpen(true);
     } catch (err: any) {
-      console.error("Failed to fetch active order", err);
+      // console.error("Failed to fetch active order", err); // Already handled below with toast
       toast({
         title: "Error",
         description:
@@ -197,7 +201,7 @@ export default function TablesPage() {
       setSelectedTable(null);
       setActiveOrder(null);
     } catch (err: any) {
-      console.error("Failed to create/update order", err);
+      // console.error("Failed to create/update order", err); // Already handled below with toast
       toast({
         title: "Error",
         description: err?.response?.data?.message || "Failed to process order",

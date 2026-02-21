@@ -80,7 +80,7 @@ export default function CafeBillingPage() {
       if (plansRes.data.success) setPlans(plansRes.data.plans);
       if (statusRes.data.success) setBillingStatus(statusRes.data);
     } catch (error) {
-      console.error("Fetch data error:", error);
+      // console.error("Fetch data error:", error);
       toast({
         title: "Error",
         description: "Failed to load billing information",
@@ -192,16 +192,16 @@ export default function CafeBillingPage() {
           </CardHeader>
           {new Date(activeSub.expiryDate).getTime() - new Date().getTime() <
             5 * 24 * 60 * 60 * 1000 && (
-            <CardContent>
-              <div className="flex items-center gap-2 text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200">
-                <AlertCircle className="h-4 w-4" />
-                <p className="text-sm font-medium">
-                  Your subscription expires soon. Please renew to avoid service
-                  interruption.
-                </p>
-              </div>
-            </CardContent>
-          )}
+              <CardContent>
+                <div className="flex items-center gap-2 text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200">
+                  <AlertCircle className="h-4 w-4" />
+                  <p className="text-sm font-medium">
+                    Your subscription expires soon. Please renew to avoid service
+                    interruption.
+                  </p>
+                </div>
+              </CardContent>
+            )}
         </Card>
       ) : latestPayment?.status === "pending" ? (
         <Card className="bg-amber-50 border-amber-200">

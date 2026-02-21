@@ -70,7 +70,7 @@ Instructions:
         systemInstruction: "You are 'CafePilot AI', a world-class cafe business analyst. Your goal is to help cafe owners understand their business performance, identify trends, and provide actionable advice based ONLY on the provided data. Be professional, data-driven, and concise."
       });
 
-      console.log(`AI: Attempting response using ${modelName} for user ${userId}...`);
+      // console.log(`AI: Attempting response using ${modelName} for user ${userId}...`);
       const result = await model.generateContent(prompt);
       const response = await result.response;
       return response.text();
