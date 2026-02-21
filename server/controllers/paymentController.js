@@ -94,6 +94,7 @@ export const updatePaymentStatus = async (req, res) => {
                     startDate: startDate,
                     expiryDate: expiryDate,
                     status: "active",
+                    isTrial: false,
                 },
                 { upsert: true, new: true }
             );

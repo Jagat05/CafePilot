@@ -25,6 +25,10 @@ const subscriptionSchema = new mongoose.Schema(
             enum: ["active", "expired"],
             default: "active",
         },
+        isTrial: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: true }
 );

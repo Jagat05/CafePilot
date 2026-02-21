@@ -1,5 +1,6 @@
 import User from "../model/UserSchema.js";
 import Settings from "../model/SettingsSchema.js";
+import Subscription from "../model/SubscriptionSchema.js";
 import bcrypt from "bcryptjs";
 
 /* =====================
@@ -90,9 +91,25 @@ export const approveOwner = async (req, res) => {
     });
   }
 
+  // Create 7-day Trial Subscription
+  const expiryDate = new Date();
+  expiryDate.setDate(expiryDate.getDate() + 7);
+
+  await Subscription.findOneAndUpdate(
+    { user: owner._id },
+    {
+      planName: "Trial",
+      startDate: new Date(),
+      expiryDate: expiryDate,
+      status: "active",
+      isTrial: true,
+    },
+    { upsert: true, new: true }
+  );
+
   res.json({
     success: true,
-    message: "Owner approved",
+    message: "Owner approved and 7-day trial activated",
     owner,
   });
 };
