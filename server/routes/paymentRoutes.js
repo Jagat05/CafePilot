@@ -7,6 +7,9 @@ import {
     getPendingPayments,
     updatePaymentStatus,
     getBillingStatus,
+    getAllPayments,
+    updatePayment,
+    deletePayment,
 } from "../controllers/paymentController.js";
 
 const paymentRouter = express.Router();
@@ -19,6 +22,9 @@ paymentRouter.post("/submit", upload.single("screenshot"), submitPayment);
 
 // Admin routes
 paymentRouter.get("/pending", isAdmin, getPendingPayments);
+paymentRouter.get("/all", isAdmin, getAllPayments);
 paymentRouter.put("/status/:id", isAdmin, updatePaymentStatus);
+paymentRouter.put("/update/:id", isAdmin, updatePayment);
+paymentRouter.delete("/:id", isAdmin, deletePayment);
 
 export default paymentRouter;
