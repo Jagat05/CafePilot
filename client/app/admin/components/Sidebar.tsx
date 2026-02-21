@@ -37,6 +37,7 @@ import Image from "next/image";
 const AdminItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "ManageCafe", url: "/admin/managecafe", icon: Table2 },
+  { title: "Payments", url: "/admin/payments", icon: ClipboardList },
   { title: "Billings", url: "/admin/billings", icon: DollarSign },
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ];

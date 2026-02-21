@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   LogOut,
   Table2,
+  CreditCard,
 } from "lucide-react";
 import API from "@/lib/axios";
 
@@ -42,6 +43,7 @@ const menuItems = [
   { title: "Menu", url: "/cafedashboard/menu", icon: UtensilsCrossed },
   { title: "Orders", url: "/cafedashboard/orders", icon: ClipboardList },
   { title: "Staff", url: "/cafedashboard/staff", icon: Users },
+  { title: "Billing", url: "/cafedashboard/billings", icon: CreditCard },
 ];
 
 export function AppSidebar() {

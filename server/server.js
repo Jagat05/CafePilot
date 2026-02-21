@@ -13,9 +13,18 @@ import { Server } from "socket.io";
 import { createServer } from "http";
 import aiRoutes from "./routes/aiRoutes.js";
 import planRouter from "./routes/planRoutes.js";
+import paymentRouter from "./routes/paymentRoutes.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = createServer(app);
+
+// Serve static files from uploads folder
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Allow localhost and LAN origins (e.g. http://192.168.1.80:3000) for mobile testing
 const allowedOrigin = (origin) => {
@@ -73,6 +82,7 @@ app.use("/api/menu", menuRouter);
 app.use("/api/staff", staffRouter);
 app.use("/api/ai", aiRoutes);
 app.use("/api/plans", planRouter);
+app.use("/api/payments", paymentRouter);
 
 app.get("/", (req, res) => {
   res.send("Cafe Pilot API running ☕");
