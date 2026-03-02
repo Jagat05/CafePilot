@@ -344,40 +344,49 @@ export default function Dashboard() {
       <div className="space-y-6 animate-fade-in">
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {statsCards.map((stat) => (
-            <Card
-              key={stat.title}
-              className={`warm-shadow ${stat.title === "Active Orders" ? "cursor-pointer hover:border-primary/50 transition-colors" : ""}`}
-              onClick={() => {
-                if (stat.title === "Active Orders") {
-                  setShowActiveOrdersOnly(!showActiveOrdersOnly);
-                }
-              }}
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-                <stat.icon className="h-5 w-5 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  {stat.trend != null && (
-                    <span
-                      className={
-                        stat.trendUp ? "text-success" : "text-destructive"
-                      }
-                    >
-                      <TrendingUp className="mr-1 inline h-3 w-3" />
-                      {stat.trend}
-                    </span>
-                  )}
-                  <span>{stat.description}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {statsCards.map((stat) => {
+            const isActiveOrdersCard = stat.title === "Active Orders";
+            return (
+              <Card
+                key={stat.title}
+                className={`warm-shadow transition-all duration-300 ${isActiveOrdersCard
+                  ? `cursor-pointer hover:shadow-md ${showActiveOrdersOnly
+                    ? "border-primary ring-1 ring-primary/20 bg-primary/5"
+                    : "hover:border-primary/30 hover:bg-muted/20"
+                  }`
+                  : ""
+                  }`}
+                onClick={() => {
+                  if (isActiveOrdersCard) {
+                    setShowActiveOrdersOnly(!showActiveOrdersOnly);
+                  }
+                }}
+              >
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {stat.title}
+                  </CardTitle>
+                  <stat.icon className="h-5 w-5 text-primary" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    {stat.trend != null && (
+                      <span
+                        className={
+                          stat.trendUp ? "text-success" : "text-destructive"
+                        }
+                      >
+                        <TrendingUp className="mr-1 inline h-3 w-3" />
+                        {stat.trend}
+                      </span>
+                    )}
+                    <span>{stat.description}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
