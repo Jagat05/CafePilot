@@ -20,11 +20,23 @@ import {
 import API from "@/lib/axios";
 import { useToast } from "@/hooks/use-toast";
 import AIAssistant from "@/components/ai/AIAssistant";
+import { CreateOrderDialog } from "@/components/orders/CreateOrderDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 type OrderStatus = "active" | "completed";
 
 interface OrderItem {
-  menuItem?: string;
+  menuItem: string;
   name: string;
   price: number;
   quantity: number;
@@ -32,7 +44,7 @@ interface OrderItem {
 
 interface Order {
   _id: string;
-  table: { tableNumber: number } | string;
+  table: { _id: string; tableNumber: number } | any;
   items: OrderItem[];
   status: OrderStatus;
   totalAmount: number;
@@ -43,7 +55,7 @@ interface Table {
   _id: string;
   tableNumber: number;
   capacity: number;
-  status: string;
+  status: "available" | "occupied";
 }
 
 export default function Dashboard() {
@@ -54,57 +66,204 @@ export default function Dashboard() {
   const [tables, setTables] = useState<Table[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Order management states
+  const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
+  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
+  const [activeOrder, setActiveOrder] = useState<Order | null>(null);
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+
+  const fetchDashboardData = async () => {
+    try {
+      setIsLoading(true);
+      const [ordersRes, menuRes, staffRes, tablesRes] = await Promise.all([
+        API.get("/orders/all"),
+        API.get("/menu/items"),
+        API.get("/staff"),
+        API.get("/tables/table"),
+      ]);
+
+      if (ordersRes.data?.orders) setOrders(ordersRes.data.orders);
+      if (menuRes.data?.menuItems)
+        setMenuCount(menuRes.data.menuItems.length);
+      if (staffRes.data?.staff)
+        setStaffCount(
+          staffRes.data.staff.filter(
+            (s: { status: string }) => s.status === "active",
+          ).length,
+        );
+      if (tablesRes.data?.tables) setTables(tablesRes.data.tables);
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to load dashboard data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setIsLoading(true);
-        const [ordersRes, menuRes, staffRes, tablesRes] = await Promise.all([
-          API.get("/orders/all"),
-          API.get("/menu/items"),
-          API.get("/staff"),
-          API.get("/tables/table"),
-        ]);
-
-        if (ordersRes.data?.orders) setOrders(ordersRes.data.orders);
-        if (menuRes.data?.menuItems)
-          setMenuCount(menuRes.data.menuItems.length);
-        if (staffRes.data?.staff)
-          setStaffCount(
-            staffRes.data.staff.filter(
-              (s: { status: string }) => s.status === "active",
-            ).length,
-          );
-        if (tablesRes.data?.tables) setTables(tablesRes.data.tables);
-      } catch (err) {
-        // console.error("Dashboard fetch failed", err);
-        toast({
-          title: "Error",
-          description: "Failed to load dashboard data",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchDashboardData();
   }, [toast]);
 
-  const activeOrders = orders.filter((o) => o.status === "active").length;
-  const totalRevenue = orders
-    .filter((o) => o.status === "completed")
-    .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+  const handleTableClick = async (table: Table) => {
+    setSelectedTable(table);
+
+    try {
+      // Check if there's an active order for this table
+      const { data } = await API.get(`/orders/active/${table._id}`);
+
+      if (data.order) {
+        setActiveOrder(data.order);
+      } else {
+        setActiveOrder(null);
+      }
+
+      setIsCreateOrderOpen(true);
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.response?.data?.message || "Failed to check order status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCreateOrUpdateOrder = async (orderData: {
+    items: {
+      menuItemId: string;
+      quantity: number;
+      name: string;
+      price: number;
+    }[];
+  }) => {
+    if (!selectedTable) return;
+
+    try {
+      if (activeOrder) {
+        const totalAmount = orderData.items.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0,
+        );
+        await API.put(`/orders/update/${activeOrder._id}`, {
+          items: orderData.items.map((i) => ({
+            menuItem: i.menuItemId,
+            name: i.name,
+            price: i.price,
+            quantity: i.quantity,
+          })),
+          totalAmount,
+        });
+
+        toast({
+          title: "Order Updated",
+          description: "Order has been updated successfully.",
+        });
+      } else {
+        const { data } = await API.post("/orders/create", {
+          tableId: selectedTable._id,
+        });
+
+        const totalAmount = orderData.items.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0,
+        );
+        await API.put(`/orders/update/${data.order._id}`, {
+          items: orderData.items.map((i) => ({
+            menuItem: i.menuItemId,
+            name: i.name,
+            price: i.price,
+            quantity: i.quantity,
+          })),
+          totalAmount,
+        });
+
+        toast({
+          title: "Order Created",
+          description: "Order has been created successfully.",
+        });
+      }
+
+      fetchDashboardData();
+      setIsCreateOrderOpen(false);
+      setSelectedTable(null);
+      setActiveOrder(null);
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.response?.data?.message || "Failed to process order",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const confirmClearTableOrder = async () => {
+    if (!activeOrder) return;
+
+    try {
+      await API.put(`/orders/complete/${activeOrder._id}`);
+      fetchDashboardData();
+      setIsCreateOrderOpen(false);
+      setSelectedTable(null);
+      setActiveOrder(null);
+      toast({
+        title: "Table Cleared",
+        description: "Order has been marked as completed and table is now available.",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.response?.data?.message || "Failed to clear table",
+        variant: "destructive",
+      });
+    } finally {
+      setConfirmClearOpen(false);
+    }
+  };
+
+  const confirmCancelOrderAction = async () => {
+    if (!activeOrder) return;
+
+    try {
+      await API.put(`/orders/cancel/${activeOrder._id}`);
+      fetchDashboardData();
+      setIsCreateOrderOpen(false);
+      setSelectedTable(null);
+      setActiveOrder(null);
+      toast({
+        title: "Order Cancelled",
+        description: "The order has been cancelled and table is now available.",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.response?.data?.message || "Failed to cancel order",
+        variant: "destructive",
+      });
+    } finally {
+      setConfirmCancelOpen(false);
+    }
+  };
+
+  const [showActiveOrdersOnly, setShowActiveOrdersOnly] = useState(false);
+
+  const activeOrdersCount = orders.filter((o) => o.status === "active").length;
+  const activeOrders = orders.filter((o) => o.status === "active");
+  const completedOrders = orders.filter((o) => o.status === "completed");
+  const totalRevenue = completedOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
   const occupiedTables = tables.filter((t) => t.status === "occupied").length;
 
-  const recentOrders = orders.slice(0, 5);
+  const displayOrders = showActiveOrdersOnly ? activeOrders : orders.slice(0, 5);
 
   const statsCards = [
     {
       title: "Active Orders",
-      value: activeOrders,
+      value: activeOrdersCount,
       description: "Orders being processed",
       icon: ShoppingBag,
-      trend: null as string | null,
+      trend: null,
       trendUp: true,
     },
     {
@@ -186,7 +345,15 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {statsCards.map((stat) => (
-            <Card key={stat.title} className="warm-shadow">
+            <Card
+              key={stat.title}
+              className={`warm-shadow ${stat.title === "Active Orders" ? "cursor-pointer hover:border-primary/50 transition-colors" : ""}`}
+              onClick={() => {
+                if (stat.title === "Active Orders") {
+                  setShowActiveOrdersOnly(!showActiveOrdersOnly);
+                }
+              }}
+            >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   {stat.title}
@@ -214,19 +381,33 @@ export default function Dashboard() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Recent Orders */}
+          {/* Recent / Active Orders */}
           <Card className="warm-shadow">
-            <CardHeader>
-              <CardTitle>Recent Orders</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>{showActiveOrdersOnly ? "Active Orders" : "Recent Orders"}</CardTitle>
+                {showActiveOrdersOnly && (
+                  <CardDescription>Currently being processed</CardDescription>
+                )}
+              </div>
+              {showActiveOrdersOnly && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowActiveOrdersOnly(false)}
+                >
+                  Show Recent
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentOrders.length === 0 ? (
+                {displayOrders.length === 0 ? (
                   <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-                    No orders yet. Create orders from the Orders page.
+                    {showActiveOrdersOnly ? "No active orders." : "No orders yet. Create orders from the Orders page."}
                   </div>
                 ) : (
-                  recentOrders.map((order) => {
+                  displayOrders.map((order) => {
                     const tableNum =
                       typeof order.table === "object" &&
                         order.table?.tableNumber != null
@@ -238,7 +419,13 @@ export default function Dashboard() {
                     return (
                       <div
                         key={order._id}
-                        className="flex items-center justify-between rounded-lg border p-3"
+                        className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 cursor-pointer transition-colors"
+                        onClick={() => {
+                          if (order.status === "active") {
+                            const foundTable = tables.find(t => t._id === (typeof order.table === "object" ? order.table._id : order.table));
+                            if (foundTable) handleTableClick(foundTable);
+                          }
+                        }}
                       >
                         <div className="space-y-1">
                           <p className="text-sm font-medium">
@@ -249,15 +436,22 @@ export default function Dashboard() {
                             {(order.totalAmount || 0).toFixed(2)}
                           </p>
                         </div>
-                        <Badge
-                          variant={
-                            order.status === "completed"
-                              ? "default"
-                              : "secondary"
-                          }
-                        >
-                          {order.status}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={
+                              order.status === "completed"
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
+                            {order.status}
+                          </Badge>
+                          {order.status === "active" && (
+                            <Button variant="ghost" size="sm" className="h-7 text-xs">
+                              Manage
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     );
                   })
@@ -288,10 +482,11 @@ export default function Dashboard() {
                     {tables.map((table) => (
                       <div
                         key={table._id}
-                        className={`flex items-center justify-between rounded-lg border p-3 ${table.status === "occupied"
-                            ? "border-warning/30 bg-warning/5"
-                            : "border-success/30 bg-success/5"
+                        className={`flex items-center justify-between rounded-lg border p-3 cursor-pointer transition-all hover:shadow-sm active:scale-[0.98] ${table.status === "occupied"
+                          ? "border-warning/30 bg-warning/5"
+                          : "border-success/30 bg-success/5"
                           }`}
+                        onClick={() => handleTableClick(table)}
                       >
                         <div>
                           <p className="text-sm font-medium">
@@ -326,6 +521,67 @@ export default function Dashboard() {
           <AIAssistant />
         </div>
       </div>
+
+      {/* Create/Edit Order Dialog */}
+      <CreateOrderDialog
+        open={isCreateOrderOpen}
+        onOpenChange={setIsCreateOrderOpen}
+        table={
+          selectedTable
+            ? {
+              id: selectedTable._id,
+              number: selectedTable.tableNumber,
+              seats: selectedTable.capacity,
+              status: selectedTable.status,
+            }
+            : null
+        }
+        existingOrder={activeOrder}
+        onSubmit={handleCreateOrUpdateOrder}
+        onClearTable={() => setConfirmClearOpen(true)}
+        onCancelOrder={() => setConfirmCancelOpen(true)}
+      />
+
+      {/* Clear Table Confirmation */}
+      <AlertDialog open={confirmClearOpen} onOpenChange={setConfirmClearOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear Table?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to clear this table? The order will be
+              marked as completed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmClearTableOrder}>
+              Clear Table
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancel Order Confirmation */}
+      <AlertDialog open={confirmCancelOpen} onOpenChange={setConfirmCancelOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Order?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this order? This action cannot be
+              undone and the table will be freed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>No, Keep it</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmCancelOrderAction}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Yes, Cancel Order
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
