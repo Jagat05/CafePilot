@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -48,6 +49,7 @@ interface Order {
 }
 
 export default function TablesPage() {
+  const router = useRouter();
   const { toast } = useToast();
   const [tables, setTables] = useState<Table[]>([]);
   const [isAddTableOpen, setIsAddTableOpen] = useState(false);
@@ -238,7 +240,7 @@ export default function TablesPage() {
     }
   };
 
-  const handleClearTable = async () => {
+  const handleCheckout = async () => {
     if (!activeOrder) return;
     setConfirmClearOpen(true);
   };
@@ -272,24 +274,29 @@ export default function TablesPage() {
     }
   };
 
-  const confirmClearTableOrder = async () => {
+  const confirmCheckoutOrder = async () => {
     if (!activeOrder) return;
 
     try {
-      await API.put(`/orders/complete/${activeOrder._id}`);
+      await API.put(`/orders/checkout/${activeOrder._id}`);
+      const orderId = activeOrder._id;
+
       fetchTables();
       setIsCreateOrderOpen(false);
       setSelectedTable(null);
       setActiveOrder(null);
+
       toast({
-        title: "Table Cleared",
-        description:
-          "Order has been marked as completed and table is now available.",
+        title: "Checkout Successful",
+        description: "Order marked as PAID. Opening receipt...",
       });
+
+      // Redirect to receipt page
+      router.push(`/receipt/${orderId}`);
     } catch (err: any) {
       toast({
         title: "Error",
-        description: err?.response?.data?.message || "Failed to clear table",
+        description: err?.response?.data?.message || "Failed to checkout order",
         variant: "destructive",
       });
     } finally {
@@ -388,7 +395,7 @@ export default function TablesPage() {
         }
         existingOrder={activeOrder}
         onSubmit={handleCreateOrUpdateOrder}
-        onClearTable={handleClearTable}
+        onCheckout={handleCheckout}
         onCancelOrder={handleCancelOrder}
       />
 
@@ -418,16 +425,16 @@ export default function TablesPage() {
       <AlertDialog open={confirmClearOpen} onOpenChange={setConfirmClearOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Clear Table?</AlertDialogTitle>
+            <AlertDialogTitle>Check Out Bill?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to clear this table? The order will be
-              marked as completed.
+              Are you sure you want to checkout this table? The order will be
+              marked as PAID and the table will be freed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmClearTableOrder}>
-              Clear Table
+            <AlertDialogAction onClick={confirmCheckoutOrder}>
+              Check Out Bill
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

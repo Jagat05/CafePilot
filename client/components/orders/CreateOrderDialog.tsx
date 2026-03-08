@@ -44,7 +44,7 @@ interface CreateOrderDialogProps {
       price: number;
     }[];
   }) => void;
-  onClearTable?: () => void;
+  onCheckout?: () => void;
   onCancelOrder?: () => void;
 }
 
@@ -54,7 +54,7 @@ export function CreateOrderDialog({
   table,
   existingOrder,
   onSubmit,
-  onClearTable,
+  onCheckout,
   onCancelOrder,
 }: CreateOrderDialogProps) {
   const { toast } = useToast();
@@ -270,14 +270,14 @@ export function CreateOrderDialog({
                   Cancel Order
                 </Button>
               )}
-              {existingOrder && onClearTable && (
+              {existingOrder && onCheckout && (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={onClearTable}
-                  className="border-green-500 text-green-600 hover:bg-green-50 text-xs sm:text-sm"
+                  onClick={onCheckout}
+                  className="border-green-500 text-green-600 hover:bg-green-50 text-xs sm:text-sm font-semibold"
                 >
-                  Clear Table
+                  Check Out Bill
                 </Button>
               )}
 

@@ -115,6 +115,50 @@ export const completeOrder = async (req, res) => {
   }
 };
 
+export const checkoutOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await Order.findOneAndUpdate(
+      { _id: id, owner: req.user._id, status: "active" },
+      { status: "PAID" },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Update table status to available
+    await Table.findByIdAndUpdate(order.table, {
+      status: "available",
+    });
+
+    res.json({ success: true, order, message: "Order checked out successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to checkout order" });
+  }
+};
+
+export const getOrderById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await Order.findOne({
+      _id: id,
+      owner: req.user._id,
+    }).populate("table", "tableNumber");
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.json({ success: true, order });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch order details" });
+  }
+};
+
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find({ owner: req.user._id })

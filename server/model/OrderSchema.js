@@ -25,7 +25,7 @@ const orderSchema = new mongoose.Schema(
     ],
     status: {
       type: String,
-      enum: ["active", "completed", "cancelled"],
+      enum: ["active", "completed", "cancelled", "PAID"],
       default: "active",
     },
     totalAmount: {
