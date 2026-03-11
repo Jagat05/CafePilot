@@ -59,9 +59,11 @@ import {
   CreditCard,
   User2Icon,
   ChefHat,
+  Calendar,
 } from "lucide-react";
 import API from "@/lib/axios";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 const roleIcons: Record<string, React.ReactNode> = {
   admin: <Shield className="h-4 w-4" />,
@@ -104,6 +106,7 @@ function mapApiStaffToMember(item: {
 }
 
 export default function StaffPage() {
+  const router = useRouter();
   const { toast } = useToast();
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -129,7 +132,6 @@ export default function StaffPage() {
         setStaff(data.staff.map(mapApiStaffToMember));
       }
     } catch (err) {
-      // console.error("Failed to fetch staff", err);
       toast({
         title: "Error",
         description: "Failed to load staff",
@@ -280,7 +282,6 @@ export default function StaffPage() {
   return (
     <div title="Staff Management">
       <div className="space-y-6 animate-fade-in">
-        {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">
           <Card className="warm-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -289,17 +290,13 @@ export default function StaffPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{staff.length}</div>
-              <p className="text-xs text-muted-foreground">
-                {activeCount} active
-              </p>
+              <p className="text-xs text-muted-foreground">{activeCount} active</p>
             </CardContent>
           </Card>
           {Object.entries(roleBreakdown).map(([role, count]) => (
             <Card key={role} className="warm-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium capitalize">
-                  {role}s
-                </CardTitle>
+                <CardTitle className="text-sm font-medium capitalize">{role}s</CardTitle>
                 {roleIcons[role]}
               </CardHeader>
               <CardContent>
@@ -309,7 +306,6 @@ export default function StaffPage() {
           ))}
         </div>
 
-        {/* Actions */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-1 gap-4">
             <div className="relative flex-1 max-w-sm">
@@ -336,99 +332,90 @@ export default function StaffPage() {
               </SelectContent>
             </Select>
           </div>
-          {/* {isAdmin && ( */}
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={() => handleOpenDialog()}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Staff
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {editingMember ? "Edit Staff Member" : "Add Staff Member"}
-                </DialogTitle>
-                <DialogDescription>
-                  {editingMember
-                    ? "Update the staff member details."
-                    : "Add a new team member."}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Full Name *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/cafedashboard/staff/attendance")}
+              className="warm-shadow"
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              Attendance
+            </Button>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={() => handleOpenDialog()}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Staff
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{editingMember ? "Edit Staff Member" : "Add Staff Member"}</DialogTitle>
+                  <DialogDescription>
+                    {editingMember ? "Update the staff member details." : "Add a new team member."}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="phone">Phone</Label>
+                    <Label htmlFor="name">Full Name *</Label>
                     <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="role">Role</Label>
-                    <Select
-                      value={formData.role}
-                      onValueChange={(value) =>
-                        setFormData({
-                          ...formData,
-                          role: value as StaffMember["role"],
-                        })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="manager">Manager</SelectItem>
-                        <SelectItem value="barista">Barista</SelectItem>
-                        <SelectItem value="cashier">Cashier</SelectItem>
-                        <SelectItem value="helper">Helper</SelectItem>
-                        <SelectItem value="cook">Cook</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="phone">Phone</Label>
+                      <Input
+                        id="phone"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="role">Role</Label>
+                      <Select
+                        value={formData.role}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, role: value as StaffMember["role"] })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="manager">Manager</SelectItem>
+                          <SelectItem value="barista">Barista</SelectItem>
+                          <SelectItem value="cashier">Cashier</SelectItem>
+                          <SelectItem value="helper">Helper</SelectItem>
+                          <SelectItem value="cook">Cook</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleSave}>Save</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          {/* )// } */}
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSave}>Save</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
-        {/* Staff Table */}
         <Card className="warm-shadow">
           <CardContent className="p-0">
             {isLoading ? (
@@ -454,17 +441,12 @@ export default function StaffPage() {
                         <div className="flex items-center gap-3">
                           <Avatar>
                             <AvatarFallback className="bg-primary/10 text-primary">
-                              {member.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
+                              {member.name.split(" ").map((n) => n[0]).join("")}
                             </AvatarFallback>
                           </Avatar>
                           <div>
                             <p className="font-medium">{member.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {member.email}
-                            </p>
+                            <p className="text-sm text-muted-foreground">{member.email}</p>
                           </div>
                         </div>
                       </TableCell>
@@ -478,30 +460,22 @@ export default function StaffPage() {
                             {member.role}
                           </Badge>
                           {member.isOwner && (
-                            <Badge variant="secondary" className="text-xs">
-                              You
-                            </Badge>
+                            <Badge variant="secondary" className="text-xs">You</Badge>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {member.phone || "—"}
-                      </TableCell>
+                      <TableCell className="text-muted-foreground">{member.phone || "—"}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {member.isOwner ? (
-                            <span className="text-sm capitalize text-muted-foreground">
-                              {member.status}
-                            </span>
+                            <span className="text-sm capitalize text-muted-foreground">{member.status}</span>
                           ) : (
                             <>
                               <Switch
                                 checked={member.status === "active"}
                                 onCheckedChange={() => toggleStatus(member.id)}
                               />
-                              <span className="text-sm capitalize">
-                                {member.status}
-                              </span>
+                              <span className="text-sm capitalize">{member.status}</span>
                             </>
                           )}
                         </div>
@@ -516,9 +490,7 @@ export default function StaffPage() {
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
                           {member.isOwner ? (
-                            <span className="text-xs text-muted-foreground">
-                              Logged-in owner
-                            </span>
+                            <span className="text-xs text-muted-foreground">Logged-in owner</span>
                           ) : (
                             <>
                               <Button
@@ -552,14 +524,11 @@ export default function StaffPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Remove staff member?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will remove {memberToDelete?.name} from the team. This
-                action cannot be undone.
+                This will remove {memberToDelete?.name} from the team. This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setMemberToDelete(null)}>
-                Cancel
-              </AlertDialogCancel>
+              <AlertDialogCancel onClick={() => setMemberToDelete(null)}>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDeleteConfirm}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -575,17 +544,6 @@ export default function StaffPage() {
             <p className="text-muted-foreground">No staff members found.</p>
           </Card>
         )}
-
-        {/* {!isAdmin && (
-          <Card className="border-warning/30 bg-warning/5">
-            <CardContent className="flex items-center gap-4 p-4">
-              <Shield className="h-5 w-5 text-warning" />
-              <p className="text-sm text-muted-foreground">
-                Only administrators can add, edit, or remove staff members.
-              </p>
-            </CardContent>
-          </Card>
-        )} */}
       </div>
     </div>
   );
