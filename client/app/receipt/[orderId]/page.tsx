@@ -50,7 +50,7 @@ export default function ReceiptPage({ params }: { params: Promise<{ orderId: str
             // Small Delay to ensure styles are applied before print dialog opens
             const timer = setTimeout(() => {
                 window.print();
-            }, 500);
+            }, 1000);
             return () => clearTimeout(timer);
         }
     }, [order, loading]);
@@ -93,7 +93,9 @@ export default function ReceiptPage({ params }: { params: Promise<{ orderId: str
           body {
             background-color: white;
           }
-          .no-print {
+          .no-print, 
+          [role="region"][aria-label="Notifications (F8)"], 
+          #announcement-banner {
             display: none !important;
           }
         }
