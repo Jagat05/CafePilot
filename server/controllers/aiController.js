@@ -2,6 +2,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import OrderSchema from "../model/OrderSchema.js";
 import TableSchema from "../model/TableSchema.js";
 import MenuSchema from "../model/MenuSchema.js";
+import StaffSchema from "../model/StaffSchema.js";
+
 
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -21,48 +23,69 @@ export const askAI = async (req, res) => {
     }
 
     // Fetch business data filtered by owner
-    const orders = await OrderSchema.find({ owner: userId }).sort({ createdAt: -1 }).limit(50);
+    const orders = await OrderSchema.find({ owner: userId }).sort({ createdAt: -1 }).limit(100);
     const tables = await TableSchema.find({ owner: userId });
     const menu = await MenuSchema.find({ owner: userId });
+    const staff = await StaffSchema.find({ owner: userId });
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const todayOrders = orders.filter(o => o.createdAt >= startOfToday);
+    const todayRevenue = todayOrders
+      .filter(o => o.status === 'completed' || o.status === 'PAID')
+      .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
     const totalRevenue = orders
-      .filter(o => o.status === 'completed')
+      .filter(o => o.status === 'completed' || o.status === 'PAID')
       .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
     const openOrders = orders.filter(o => o.status === 'active').length;
 
+
     const context = `
-Cafe Status:
+Current Time: ${now.toLocaleString()}
+
+Cafe Summary:
 - Total Tables: ${tables.length}
-- Recent Orders (Last 50): ${orders.length}
-- Revenue from Recent Completed Orders: NRS. ${totalRevenue.toFixed(2)}
+- Total Staff: ${staff.length} (${staff.filter(s => s.status === 'active').length} active)
+- Today's Revenue: NRS. ${todayRevenue.toFixed(2)}
+- Today's Orders: ${todayOrders.length}
+- Total Revenue from Recent Orders: NRS. ${totalRevenue.toFixed(2)}
 - Active (Open) Orders: ${openOrders}
 
+Staff Members:
+${staff.map(s => `- ${s.name} (${s.role}, ${s.status})`).join("\n") || "No staff registered."}
+
 Menu Snapshot:
-${menu.slice(0, 10).map((m) => `- ${m.name}: NRS. ${m.price}`).join("\n")}
-${menu.length > 10 ? `...and ${menu.length - 10} more items.` : ""}
+${menu.slice(0, 20).map((m) => `- ${m.name}: NRS. ${m.price} (${m.category})`).join("\n")}
+${menu.length > 20 ? `...and ${menu.length - 20} more items.` : ""}
 
 Recent Activity:
-${orders.slice(0, 5).map((o) => {
+${orders.slice(0, 10).map((o) => {
       const tableNum = (typeof o.table === 'object' && o.table?.tableNumber) || o.tableNumber || "Unknown";
-      return `- Table ${tableNum}: NRS. ${o.totalAmount} (${o.status})`;
+      const items = o.items.map(i => `${i.name} x${i.quantity}`).join(", ");
+      return `- Table ${tableNum}: NRS. ${o.totalAmount} (${o.status}) - ${items}`;
     }).join("\n")}
     `;
 
+
     const prompt = `
-You are "CafePilot AI", a smart assistant for a cafe owner. 
-Use the provided business data to answer the owner's question accurately.
-If the data doesn't contain the answer, say "I don't have enough data to answer that accurately."
+You are "CafePilot AI", the ultimate business consultant for this cafe.
+Use the provided business data to answer the owner's question accurately and professionally.
+Provide deep insights, identify trends, and offer suggestions based on the data.
 
 ${context}
 
 Owner's Question: ${question}
 
 Instructions:
-- Be concise (max 3-4 sentences).
-- Sound professional yet helpful.
-- Focus on business health and insights.
-- Format numbers nicely with "NRS." prefix.
+- Be professional, data-driven, and extremely helpful.
+- If the owner asks for a summary or report, provide a detailed breakdown.
+- If the owner asks about staff, use their names and roles.
+- Format currency with "NRS." prefix.
+- If you don't have enough data to answer specifically, explain why and provide a general business tip related to the query.
     `;
+
 
     const getAIResponse = async (modelName) => {
       const model = genAI.getGenerativeModel({
