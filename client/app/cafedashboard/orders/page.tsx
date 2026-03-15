@@ -16,7 +16,7 @@ import API from "@/lib/axios";
 import { useToast } from "@/hooks/use-toast";
 
 const statusConfig: Record<
-  "active" | "completed",
+  string,
   { label: string; icon: React.ReactNode; color: string }
 > = {
   active: {
@@ -28,6 +28,16 @@ const statusConfig: Record<
     label: "Completed",
     icon: <CheckCircle className="h-4 w-4" />,
     color: "bg-muted text-muted-foreground border-border",
+  },
+  PAID: {
+    label: "Paid",
+    icon: <CheckCircle className="h-4 w-4" />,
+    color: "bg-green-100 text-green-700 border-green-300",
+  },
+  cancelled: {
+    label: "Cancelled",
+    icon: <CheckCircle className="h-4 w-4" />,
+    color: "bg-red-100 text-red-700 border-red-300",
   },
 };
 
@@ -110,7 +120,7 @@ export default function OrdersPage() {
   }, []);
 
   const activeOrders = orders.filter((o) => o.status === "active");
-  const completedOrders = orders.filter((o) => o.status === "completed");
+  const completedOrders = orders.filter((o) => o.status === "completed" || o.status === "PAID");
 
   const todayCompletedCount = completedOrders.filter((order) =>
     isToday(new Date(order.createdAt)),
@@ -164,14 +174,14 @@ export default function OrdersPage() {
   };
 
   const getNextStatus = (
-    currentStatus: "active" | "completed",
+    currentStatus: string,
   ): "active" | "completed" | null => {
     if (currentStatus === "active") return "completed";
     return null;
   };
 
   const OrderCard = ({ order }: { order: any }) => {
-    const config = statusConfig[order.status as "active" | "completed"];
+    const config = statusConfig[order.status] || statusConfig["completed"];
     const nextStatus = getNextStatus(order.status);
     const tableNumber = order.table?.tableNumber || "N/A";
 

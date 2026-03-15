@@ -165,22 +165,22 @@ export function CreateOrderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md w-[95vw] max-h-[95vh] overflow-y-auto p-4 sm:p-6">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="sm:max-w-md w-[95vw] h-[90vh] sm:h-auto sm:max-h-[85vh] p-0 flex flex-col overflow-hidden border-none gap-0 shadow-2xl">
+        <DialogHeader className="p-4 sm:p-6 border-b shrink-0 bg-background sticky top-0 z-10">
+          <DialogTitle className="text-xl font-bold">
             {existingOrder ? "Edit Order" : "New Order"} - Table {table.number}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Add Items</label>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Add Items</label>
             <div className="flex gap-2">
               <Select
                 value={selectedItemToAdd}
                 onValueChange={setSelectedItemToAdd}
               >
-                <SelectTrigger className="flex-1">
+                <SelectTrigger className="flex-1 h-11 bg-muted/30">
                   <SelectValue placeholder="Select menu item" />
                 </SelectTrigger>
                 <SelectContent>
@@ -193,79 +193,84 @@ export function CreateOrderDialog({
                     ))}
                 </SelectContent>
               </Select>
-              <Button onClick={handleAddItem} disabled={!selectedItemToAdd}>
-                <Plus className="h-4 w-4" />
+              <Button onClick={handleAddItem} disabled={!selectedItemToAdd} size="icon" className="h-11 w-11 shrink-0">
+                <Plus className="h-5 w-5" />
               </Button>
             </div>
           </div>
 
-          <div className="space-y-2 border rounded-md p-2 max-h-[30vh] sm:max-h-[200px] overflow-y-auto">
-            {items.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No items added yet
-              </p>
-            ) : (
-              items.map((item, idx) => {
-                const menuItem = menuItems.find(
-                  (m) => m.id === item.menuItemId,
-                );
-                return (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between text-sm py-1 border-b last:border-0"
-                  >
-                    <div className="flex-1 pr-2">
-                      <p className="font-medium line-clamp-1">
-                        {menuItem?.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        NRS. {menuItem?.price.toFixed(2)} x {item.quantity}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-7 w-7 sm:h-6 sm:w-6"
-                        onClick={() => updateQuantity(idx, -1)}
+          <div className="space-y-4">
+            <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Order Items</label>
+            <div className="space-y-2">
+              {items.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 bg-muted/20 rounded-xl border-2 border-dashed">
+                  <p className="text-sm text-muted-foreground">No items added yet</p>
+                </div>
+              ) : (
+                <div className="divide-y border rounded-xl overflow-hidden bg-card">
+                  {items.map((item, idx) => {
+                    const menuItem = menuItems.find(
+                      (m) => m.id === item.menuItemId,
+                    );
+                    return (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between p-4 bg-background hover:bg-muted/10 transition-colors"
                       >
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <span className="w-6 text-center text-xs font-semibold">
-                        {item.quantity}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-7 w-7 sm:h-6 sm:w-6"
-                        onClick={() => updateQuantity(idx, 1)}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })
-            )}
+                        <div className="flex-1 pr-4">
+                          <p className="font-semibold text-foreground">
+                            {menuItem?.name}
+                          </p>
+                          <p className="text-sm font-medium text-primary">
+                            NRS. {menuItem?.price.toFixed(2)}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3 bg-muted/40 p-1.5 rounded-lg border">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-md hover:bg-background"
+                            onClick={() => updateQuantity(idx, -1)}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="w-8 text-center text-sm font-bold">
+                            {item.quantity}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-md hover:bg-background"
+                            onClick={() => updateQuantity(idx, 1)}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="flex justify-between items-center pt-4 border-t">
-            <span className="font-bold">Total</span>
-            <span className="font-bold text-lg">
+          <div className="flex justify-between items-center p-4 rounded-xl bg-primary/5 border border-primary/10">
+            <span className="font-semibold text-muted-foreground">Estimated Total</span>
+            <span className="font-bold text-2xl text-primary">
               NRS. {calculateTotal().toFixed(2)}
             </span>
           </div>
         </div>
 
-        <DialogFooter className="sm:justify-between">
-          <div className="flex flex-col sm:flex-row justify-between w-full gap-4 pt-2">
-            <div className="flex flex-row gap-2 justify-center sm:justify-start">
+        <DialogFooter className="p-4 sm:p-6 border-t bg-muted/10 shrink-0 sticky bottom-0 z-10 w-full">
+          <div className="flex flex-col gap-3 w-full">
+            <div className="flex flex-row gap-2 w-full">
               {existingOrder && onCancelOrder && (
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="default"
                   onClick={onCancelOrder}
-                  className="border-destructive text-destructive hover:bg-destructive/10 text-xs sm:text-sm"
+                  className="flex-1 border-destructive text-destructive hover:bg-destructive/10 font-semibold"
                 >
                   Cancel Order
                 </Button>
@@ -273,27 +278,27 @@ export function CreateOrderDialog({
               {existingOrder && onCheckout && (
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="default"
                   onClick={onCheckout}
-                  className="border-green-500 text-green-600 hover:bg-green-50 text-xs sm:text-sm font-semibold"
+                  className="flex-1 border-green-500 text-green-600 hover:bg-green-50 font-bold"
                 >
-                  Check Out Bill
+                  Check Out
                 </Button>
               )}
-
             </div>
-            <div className="flex flex-row gap-2 justify-center sm:justify-end">
+
+            <div className="flex flex-row gap-2 w-full">
               <Button
-                variant="outline"
-                size="sm"
+                variant="secondary"
+                size="default"
                 onClick={() => onOpenChange(false)}
-                className="text-xs sm:text-sm flex-1 sm:flex-none"
+                className="flex-1 font-semibold"
               >
-                Cancel
+                Close
               </Button>
               <Button
                 onClick={handleSubmit}
-                size="sm"
+                size="default"
                 disabled={(() => {
                   if (items.length === 0) return true;
                   if (!existingOrder) return false;
@@ -307,9 +312,9 @@ export function CreateOrderDialog({
                     })
                   );
                 })()}
-                className="text-xs sm:text-sm flex-1 sm:flex-none"
+                className="flex-[1.5] font-bold shadow-lg shadow-primary/20"
               >
-                {existingOrder ? "Update Order" : "Create Order"}
+                {existingOrder ? "Update Changes" : "Create Order"}
               </Button>
             </div>
           </div>
@@ -318,3 +323,4 @@ export function CreateOrderDialog({
     </Dialog>
   );
 }
+

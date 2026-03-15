@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 
-type OrderStatus = "active" | "completed";
+type OrderStatus = "active" | "completed" | "PAID" | "cancelled";
 
 interface OrderItem {
   menuItem: string;
@@ -251,7 +251,7 @@ export default function Dashboard() {
 
   const activeOrdersCount = orders.filter((o) => o.status === "active").length;
   const activeOrders = orders.filter((o) => o.status === "active");
-  const completedOrders = orders.filter((o) => o.status === "completed");
+  const completedOrders = orders.filter((o) => o.status === "completed" || o.status === "PAID");
   const totalRevenue = completedOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
   const occupiedTables = tables.filter((t) => t.status === "occupied").length;
 
